@@ -49,9 +49,9 @@
   "crate": {
    "uri": "assets/kenney/furniture/cardboardBoxClosed.glb",
    "dims": [
-    0.5,
-    0.4,
-    0.5
+    0.34,
+    0.45,
+    0.34
    ],
    "front": "+z"
   }
@@ -392,14 +392,14 @@
    "visible": true,
    "aabb": [
     [
-     1.1938,
+     1.2918,
      0.0,
-     1.1938
+     1.2918
     ],
     [
-     1.8062,
-     0.4,
-     1.8062
+     1.7082,
+     0.45,
+     1.7082
     ]
    ],
    "type": "asset",
