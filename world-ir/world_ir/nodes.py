@@ -14,6 +14,7 @@ from .common import (
     Behavior,
     Color,
     Id,
+    Intent,
     IRModel,
     Physics,
     Polygon2,
@@ -46,6 +47,9 @@ class NodeBase(IRModel):
     )
     visible: bool = True
     locked: bool = Field(False, description="The repair model may not change this node.")
+    intent: list[Intent] = Field(
+        default_factory=list, description="Deliberate breaks from the default checks, each backed by a quote."
+    )
     physics: Optional[Physics] = Field(None, json_schema_extra=tiered("v2"))
     behaviors: list[Behavior] = Field(
         default_factory=list,

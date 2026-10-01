@@ -60,6 +60,7 @@ The top level of a world file and the objects it holds directly.
 | `required` | list[Requirement] | auto | v1 |  |
 | `forbidden` | list[string] | auto | v1 | Categories that must not appear. |
 | `references` | list[ImageRef] | auto | v2 |  |
+| `messages` | list[string] | auto | v1 | Later instructions from the user, unedited, e.g. 'leave the lamp floating'. |
 | `notes` | string (optional) | none | v1 |  |
 
 #### Requirement
@@ -100,11 +101,14 @@ The top level of a world file and the objects it holds directly.
 | `wall_tolerance` | number | 0.01 | v1 | Metres a footprint may cross a wall. (≥0) |
 | `door_clearance` | number | 0.9 | v1 | Depth of the free zone in front of a door. (>0) |
 | `walkway_width` | number | 0.6 | v1 | (>0) |
+| `deliberate_min_offset` | number | 0.15 | v1 | A waived floating or sunk check still flags gaps smaller than this: near misses are mistakes, not art. (≥0) |
+| `deliberate_min_tilt_deg` | number | 15.0 | v1 | Likewise for a waived upright check: small tilts are still flagged. (≥0 ≤180) |
+| `ask_when_unexplained` | boolean | true | v1 | Large unexplained breaks in a scene whose brief allows oddness are asked about, not repaired. |
 | `scale_ratio` | [number × 2] | (0.5, 2.0) | v1 | Allowed multiple of the typical category size. |
 | `max_walkable_slope_deg` | number | 35.0 | v1 | (>0 ≤90) |
 | `floor_covering_max_height` | number | 0.03 | v1 | Objects thinner than this (rugs, mats) count as floor. (≥0) |
 | `allowed_overlaps` | list[OverlapAllowance] | auto | v1 |  |
-| `checks` | list["floating" \| "sunk" \| "overlap" \| "out_of_bounds" \| "facing" \| "scale" \| "door_clearance" \| "reachability" \| "relations" \| "requirements"] | auto | v1 | Checks to run. 'reachability' and 'requirements' are off by default. |
+| `checks` | list["floating" \| "sunk" \| "upright" \| "overlap" \| "inside_wall" \| "out_of_bounds" \| "facing" \| "scale" \| "door_clearance" \| "reachability" \| "relations" \| "requirements"] | auto | v1 | Checks to run. 'reachability' and 'requirements' are off by default. |
 
 #### OverlapAllowance
 
@@ -197,6 +201,17 @@ Small objects used by many nodes.
 | `preset` | "spin" \| "bob" \| "sway" \| "flicker" \| "open_on_approach" \| "toggle_on_click" \| "follow_path" \| "look_at_viewer" | required | v2 |  |
 | `params` | map[string → number \| string \| boolean] | auto | v2 | Preset parameters, e.g. {'speed_deg_s': 30} for spin. |
 | `path` | id (optional) | none | v2 | For follow_path: the path node. Refers to: path. |
+
+#### Intent
+
+*Tier v1.* A deliberate break from what the checks expect, with the words that asked for it.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `allows` | list["floating" \| "sunk" \| "upright" \| "overlap" \| "inside_wall" \| "facing" \| "scale" \| "out_of_bounds" \| "door_clearance" \| "reachability", ≥1] | required | v1 | Checks that do not apply to this node. |
+| `source` | "prompt" \| "user" \| "image_brief" | required | v1 | Who asked. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability. |
+| `quote` | string | required | v1 | The words that asked for it, copied exactly (case and spacing aside). |
+| `note` | string (optional) | none | v1 |  |
 
 #### Opening
 
@@ -590,6 +605,7 @@ Everything that can appear in the scene tree. Every kind also has the common nod
 | `support` | Support (optional) | none | v1 | What it rests on. Empty means: work it out from parent and placement. |
 | `visible` | boolean | true | v1 |  |
 | `locked` | boolean | false | v1 | The repair model may not change this node. |
+| `intent` | list[Intent] | auto | v1 | Deliberate breaks from the default checks, each backed by a quote. |
 | `physics` | Physics (optional) | none | v2 |  |
 | `behaviors` | list[Behavior] | auto | v2 | Animation presets the viewer plays. Validators check the rest pose, where the node is placed. |
 | `source` | Provenance (optional) | none | v1 |  |

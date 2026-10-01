@@ -301,6 +301,16 @@
               "repair": null
             },
             {
+              "name": "messages",
+              "type": "list[string]",
+              "limits": "",
+              "default": "auto",
+              "description": "Later instructions from the user, unedited, e.g. 'leave the lamp floating'.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
               "name": "notes",
               "type": "string (optional)",
               "limits": "",
@@ -515,6 +525,36 @@
               "repair": null
             },
             {
+              "name": "deliberate_min_offset",
+              "type": "number",
+              "limits": "≥0",
+              "default": "0.15",
+              "description": "A waived floating or sunk check still flags gaps smaller than this: near misses are mistakes, not art.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "deliberate_min_tilt_deg",
+              "type": "number",
+              "limits": "≥0 ≤180",
+              "default": "15.0",
+              "description": "Likewise for a waived upright check: small tilts are still flagged.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "ask_when_unexplained",
+              "type": "boolean",
+              "limits": "",
+              "default": "true",
+              "description": "Large unexplained breaks in a scene whose brief allows oddness are asked about, not repaired.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
               "name": "scale_ratio",
               "type": "[number × 2]",
               "limits": "",
@@ -556,7 +596,7 @@
             },
             {
               "name": "checks",
-              "type": "list[\"floating\" | \"sunk\" | \"overlap\" | \"out_of_bounds\" | \"facing\" | \"scale\" | \"door_clearance\" | \"reachability\" | \"relations\" | \"requirements\"]",
+              "type": "list[\"floating\" | \"sunk\" | \"upright\" | \"overlap\" | \"inside_wall\" | \"out_of_bounds\" | \"facing\" | \"scale\" | \"door_clearance\" | \"reachability\" | \"relations\" | \"requirements\"]",
               "limits": "",
               "default": "auto",
               "description": "Checks to run. 'reachability' and 'requirements' are off by default.",
@@ -953,6 +993,54 @@
               "description": "For follow_path: the path node.",
               "tier": "v2",
               "ref": "path",
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "Intent",
+          "tag": null,
+          "tier": "v1",
+          "summary": "A deliberate break from what the checks expect, with the words that asked for it.",
+          "fields": [
+            {
+              "name": "allows",
+              "type": "list[\"floating\" | \"sunk\" | \"upright\" | \"overlap\" | \"inside_wall\" | \"facing\" | \"scale\" | \"out_of_bounds\" | \"door_clearance\" | \"reachability\", ≥1]",
+              "limits": "",
+              "default": "required",
+              "description": "Checks that do not apply to this node.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "source",
+              "type": "\"prompt\" | \"user\" | \"image_brief\"",
+              "limits": "",
+              "default": "required",
+              "description": "Who asked. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "quote",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "The words that asked for it, copied exactly (case and spacing aside).",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "note",
+              "type": "string (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
               "repair": null
             }
           ]
@@ -2934,6 +3022,16 @@
               "limits": "",
               "default": "false",
               "description": "The repair model may not change this node.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "intent",
+              "type": "list[Intent]",
+              "limits": "",
+              "default": "auto",
+              "description": "Deliberate breaks from the default checks, each backed by a quote.",
               "tier": "v1",
               "ref": null,
               "repair": null

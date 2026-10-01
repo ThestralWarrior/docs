@@ -330,6 +330,14 @@
           "title": "Locked",
           "type": "boolean"
         },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
+        },
         "physics": {
           "anyOf": [
             {
@@ -635,6 +643,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -1004,6 +1020,14 @@
           "type": "array",
           "x-tier": "v2"
         },
+        "messages": {
+          "description": "Later instructions from the user, unedited, e.g. 'leave the lamp floating'.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Messages",
+          "type": "array"
+        },
         "notes": {
           "anyOf": [
             {
@@ -1090,6 +1114,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -1502,6 +1534,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -4173,6 +4213,14 @@
           "title": "Locked",
           "type": "boolean"
         },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
+        },
         "physics": {
           "anyOf": [
             {
@@ -4499,6 +4547,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -4856,6 +4912,69 @@
       "type": "object",
       "x-tier": "v2"
     },
+    "Intent": {
+      "additionalProperties": false,
+      "description": "A deliberate break from what the checks expect, with the words that asked for it.\n\nA chair stuck upside down on the ceiling allows 'upright'; its support is still\nchecked against the ceiling, so repairs move it toward what was asked, not back\nto the floor. Applies to the node and everything under it. The quote must appear\nin the prompt, in a later user message, or in an approved reference caption, so a\nbuilder cannot excuse its own mistakes by calling them deliberate.",
+      "properties": {
+        "allows": {
+          "description": "Checks that do not apply to this node.",
+          "items": {
+            "enum": [
+              "floating",
+              "sunk",
+              "upright",
+              "overlap",
+              "inside_wall",
+              "facing",
+              "scale",
+              "out_of_bounds",
+              "door_clearance",
+              "reachability"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Allows",
+          "type": "array"
+        },
+        "source": {
+          "description": "Who asked. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability.",
+          "enum": [
+            "prompt",
+            "user",
+            "image_brief"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "quote": {
+          "description": "The words that asked for it, copied exactly (case and spacing aside).",
+          "minLength": 3,
+          "title": "Quote",
+          "type": "string"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "allows",
+        "source",
+        "quote"
+      ],
+      "title": "Intent",
+      "type": "object",
+      "x-tier": "v1"
+    },
     "KitchenModule": {
       "additionalProperties": false,
       "description": "One unit in a kitchen run.",
@@ -5088,6 +5207,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -5412,6 +5539,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -6385,6 +6520,14 @@
           "title": "Locked",
           "type": "boolean"
         },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
+        },
         "physics": {
           "anyOf": [
             {
@@ -6633,6 +6776,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -7207,6 +7358,14 @@
           "title": "Locked",
           "type": "boolean"
         },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
+        },
         "physics": {
           "anyOf": [
             {
@@ -7426,6 +7585,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -12400,6 +12567,14 @@
           "title": "Locked",
           "type": "boolean"
         },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
+        },
         "physics": {
           "anyOf": [
             {
@@ -12780,6 +12955,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -13628,6 +13811,14 @@
           "title": "Locked",
           "type": "boolean"
         },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
+        },
         "physics": {
           "anyOf": [
             {
@@ -13989,6 +14180,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -14443,6 +14642,27 @@
           "title": "Walkway Width",
           "type": "number"
         },
+        "deliberate_min_offset": {
+          "default": 0.15,
+          "description": "A waived floating or sunk check still flags gaps smaller than this: near misses are mistakes, not art.",
+          "minimum": 0,
+          "title": "Deliberate Min Offset",
+          "type": "number"
+        },
+        "deliberate_min_tilt_deg": {
+          "default": 15.0,
+          "description": "Likewise for a waived upright check: small tilts are still flagged.",
+          "maximum": 180,
+          "minimum": 0,
+          "title": "Deliberate Min Tilt Deg",
+          "type": "number"
+        },
+        "ask_when_unexplained": {
+          "default": true,
+          "description": "Large unexplained breaks in a scene whose brief allows oddness are asked about, not repaired.",
+          "title": "Ask When Unexplained",
+          "type": "boolean"
+        },
         "scale_ratio": {
           "default": [
             0.5,
@@ -14489,7 +14709,9 @@
             "enum": [
               "floating",
               "sunk",
+              "upright",
               "overlap",
+              "inside_wall",
               "out_of_bounds",
               "facing",
               "scale",
@@ -14625,6 +14847,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [
@@ -15005,6 +15235,14 @@
           "description": "The repair model may not change this node.",
           "title": "Locked",
           "type": "boolean"
+        },
+        "intent": {
+          "description": "Deliberate breaks from the default checks, each backed by a quote.",
+          "items": {
+            "$ref": "#/$defs/Intent"
+          },
+          "title": "Intent",
+          "type": "array"
         },
         "physics": {
           "anyOf": [

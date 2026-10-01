@@ -31,7 +31,7 @@ def bedroom() -> LoweredScene:
 
 
 def test_lowering_is_deterministic_and_committed_scenes_are_fresh():
-    for name in ("bedroom", "minimal", "cabin_clearing", "scifi_colony"):
+    for name in ("bedroom", "minimal", "cabin_clearing", "scifi_colony", "horror_room"):
         scene = lower(world(f"{name}.json"))
         assert scene == lower(world(f"{name}.json"))
         committed = json.loads((ROOT / "viewer" / "scenes" / f"{name}.json").read_text())

@@ -219,3 +219,43 @@ class Behavior(IRModel):
         description="Preset parameters, e.g. {'speed_deg_s': 30} for spin.",
     )
     path: Optional[Id] = Field(None, description="For follow_path: the path node.", json_schema_extra=ref("path"))
+
+
+Check = Literal[
+    "floating",
+    "sunk",
+    "upright",
+    "overlap",
+    "inside_wall",
+    "facing",
+    "scale",
+    "out_of_bounds",
+    "door_clearance",
+    "reachability",
+]
+
+PROMPT_WAIVABLE: frozenset[str] = frozenset({"floating", "sunk", "upright", "overlap", "facing", "scale"})
+"""Checks a quote from the prompt or an approved reference image may waive. The rest
+(inside_wall, out_of_bounds, door_clearance, reachability) only the user can waive."""
+
+
+class Intent(IRModel):
+    """A deliberate break from what the checks expect, with the words that asked for it.
+
+    A chair stuck upside down on the ceiling allows 'upright'; its support is still
+    checked against the ceiling, so repairs move it toward what was asked, not back
+    to the floor. Applies to the node and everything under it. The quote must appear
+    in the prompt, in a later user message, or in an approved reference caption, so a
+    builder cannot excuse its own mistakes by calling them deliberate.
+    """
+
+    model_config = cfg("v1")
+
+    allows: list[Check] = Field(min_length=1, description="Checks that do not apply to this node.")
+    source: Literal["prompt", "user", "image_brief"] = Field(
+        description="Who asked. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability."
+    )
+    quote: str = Field(
+        min_length=3, description="The words that asked for it, copied exactly (case and spacing aside)."
+    )
+    note: Optional[str] = None

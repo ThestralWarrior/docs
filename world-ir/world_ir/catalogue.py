@@ -193,6 +193,7 @@ def build() -> dict[str, Any]:
                         common.Physics,
                         common.Provenance,
                         common.Behavior,
+                        common.Intent,
                         architecture.Opening,
                         architecture.RoofSpec,
                     )

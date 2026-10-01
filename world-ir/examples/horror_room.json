@@ -1,0 +1,309 @@
+{
+  "ir_version": "1.0",
+  "id": "horror_room",
+  "name": "The room upstairs",
+  "seed": 13,
+  "brief": {
+    "prompt": "A horror bedroom: a chair stuck upside down on the ceiling, a lamp floating in mid-air, the bed shoved crooked against the door frame. Dim, cold light.",
+    "setting": "interior",
+    "archetype": "bedroom",
+    "style": ["low_poly"],
+    "mood": ["horror", "uneasy"],
+    "required": [
+      {
+        "category": "bed",
+        "source": "prompt"
+      },
+      {
+        "category": "desk chair",
+        "source": "prompt"
+      },
+      {
+        "category": "table lamp",
+        "source": "prompt"
+      }
+    ],
+    "messages": ["keep the nightstand tipped over on its side"]
+  },
+  "environment": {
+    "sky": {
+      "type": "color",
+      "color": "#0b0d12"
+    },
+    "ambient": {
+      "type": "hemisphere",
+      "color": "#8fa3c4",
+      "ground_color": "#2a2622",
+      "intensity": 0.35
+    },
+    "tone_mapping": "aces",
+    "exposure": 1.0
+  },
+  "materials": {
+    "boards": {
+      "preset": "wood_walnut",
+      "base_color": "#3d3029"
+    },
+    "stained_plaster": {
+      "preset": "plaster_white",
+      "base_color": "#8f8a7c"
+    },
+    "rotten_linen": {
+      "base_color": "#5a5544",
+      "roughness": 0.95
+    }
+  },
+  "assets": {
+    "bed_double": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/bedDouble.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)"
+      },
+      "category": "bed",
+      "synset": "bed.n.01",
+      "dims": [1.816, 0.712, 2.137],
+      "front": "+z",
+      "placement": {
+        "floor": true,
+        "receptacle": true
+      },
+      "surfaces": [
+        {
+          "name": "top",
+          "height": 0.45
+        }
+      ],
+      "material_slots": ["carpet", "carpetWhite", "metal", "wood"],
+      "style": ["low_poly"],
+      "extras": {
+        "kit_scale": 1.9
+      }
+    },
+    "nightstand": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/cabinetBedDrawer.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)"
+      },
+      "category": "nightstand",
+      "synset": "nightstand.n.01",
+      "dims": [0.505, 0.5, 0.413],
+      "placement": {
+        "floor": true,
+        "receptacle": true
+      },
+      "surfaces": [
+        {
+          "name": "top",
+          "height": 0.5
+        }
+      ],
+      "material_slots": ["_defaultMat", "metal", "wood"],
+      "extras": {
+        "kit_scale": 1.9
+      }
+    },
+    "lamp_table": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/lampRoundTable.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)"
+      },
+      "category": "table lamp",
+      "dims": [0.289, 0.597, 0.334],
+      "placement": {
+        "floor": false,
+        "on_object": true
+      },
+      "material_slots": ["lamp", "metal"],
+      "extras": {
+        "kit_scale": 1.9
+      }
+    },
+    "chair_desk": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/chairDesk.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)"
+      },
+      "category": "desk chair",
+      "synset": "chair.n.01",
+      "dims": [0.636, 1.154, 0.597],
+      "placement": {
+        "floor": true
+      },
+      "material_slots": ["carpet", "metalMedium"],
+      "extras": {
+        "kit_scale": 1.9
+      }
+    }
+  },
+  "nodes": [
+    {
+      "kind": "room",
+      "id": "room",
+      "room_type": "bedroom",
+      "outline": [
+        [0, 0],
+        [3.6, 0],
+        [3.6, 3.2],
+        [0, 3.2]
+      ],
+      "height": 2.6,
+      "floor_material": "boards",
+      "wall_material": "stained_plaster",
+      "openings": [
+        {
+          "id": "door",
+          "type": "door",
+          "wall": 0,
+          "offset": 0.7,
+          "width": 0.9,
+          "height": 2.05,
+          "swing": "in",
+          "hinge": "left",
+          "open": 0.3
+        }
+      ],
+      "children": [
+        {
+          "kind": "asset",
+          "id": "bed",
+          "asset": "bed_double",
+          "support": {
+            "on": "floor"
+          },
+          "xform": {
+            "pos": [1.55, 0, 1.0],
+            "yaw": 17
+          },
+          "materials": [
+            {
+              "slot": "carpet",
+              "material": "rotten_linen"
+            }
+          ],
+          "intent": [
+            {
+              "allows": ["overlap", "facing"],
+              "source": "prompt",
+              "quote": "the bed shoved crooked against the door frame",
+              "note": "It may block the door's swing; the clearance check still runs, so this is flagged for the user."
+            }
+          ]
+        },
+        {
+          "kind": "asset",
+          "id": "ceiling_chair",
+          "name": "Chair on the ceiling",
+          "asset": "chair_desk",
+          "support": {
+            "on": "ceiling"
+          },
+          "xform": {
+            "pos": [2.5, 2.6, 2.1],
+            "rot": [180, 40, 0]
+          },
+          "intent": [
+            {
+              "allows": ["upright"],
+              "source": "prompt",
+              "quote": "a chair stuck upside down on the ceiling"
+            }
+          ]
+        },
+        {
+          "kind": "asset",
+          "id": "floating_lamp",
+          "asset": "lamp_table",
+          "support": {
+            "on": "none"
+          },
+          "xform": {
+            "pos": [1.9, 1.35, 2.5],
+            "rot": [12, 0, -8]
+          },
+          "behaviors": [
+            {
+              "preset": "bob",
+              "params": {
+                "amplitude_m": 0.06,
+                "period_s": 5
+              }
+            },
+            {
+              "preset": "sway",
+              "params": {
+                "angle_deg": 3,
+                "period_s": 7
+              }
+            }
+          ],
+          "intent": [
+            {
+              "allows": ["floating", "upright"],
+              "source": "prompt",
+              "quote": "a lamp floating in mid-air"
+            }
+          ],
+          "children": [
+            {
+              "kind": "light",
+              "id": "lamp_glow",
+              "type": "point",
+              "color": "#b8d0ff",
+              "intensity": 12,
+              "range": 5,
+              "xform": {
+                "pos": [0, 0.45, 0]
+              },
+              "behaviors": [
+                {
+                  "preset": "flicker",
+                  "params": {
+                    "amount": 0.7,
+                    "speed": 13
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "asset",
+          "id": "nightstand",
+          "asset": "nightstand",
+          "support": {
+            "on": "floor"
+          },
+          "xform": {
+            "pos": [3.2, 0.25, 2.7],
+            "rot": [0, 200, 90]
+          },
+          "intent": [
+            {
+              "allows": ["upright"],
+              "source": "user",
+              "quote": "keep the nightstand tipped over on its side"
+            }
+          ]
+        },
+        {
+          "kind": "camera",
+          "id": "hero_cam",
+          "purpose": "hero",
+          "fov_deg": 70,
+          "xform": {
+            "pos": [0.35, 1.6, 2.9]
+          },
+          "look_at": [2.3, 1.2, 1.5]
+        }
+      ]
+    }
+  ]
+}

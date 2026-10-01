@@ -1,12 +1,13 @@
 """The top-level world file and the checks that tie its parts together."""
 
+import re
 from typing import Any, Iterator, Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
 from .architecture import Opening
 from .assets import AssetDef, Material
-from .common import Color, Id, IRModel, Provenance, cfg
+from .common import PROMPT_WAIVABLE, Color, Id, Intent, IRModel, Provenance, cfg
 from .environment import Environment
 from .nodes import Node, PathNode, RoomNode, ZoneNode
 from .relations import Relation
@@ -55,6 +56,9 @@ class Brief(IRModel):
     required: list[Requirement] = Field(default_factory=list)
     forbidden: list[str] = Field(default_factory=list, description="Categories that must not appear.")
     references: list[ImageRef] = Field(default_factory=list, json_schema_extra={"x-tier": "v2"})
+    messages: list[str] = Field(
+        default_factory=list, description="Later instructions from the user, unedited, e.g. 'leave the lamp floating'."
+    )
     notes: Optional[str] = None
 
 
@@ -82,6 +86,18 @@ class ValidationRules(IRModel):
     wall_tolerance: float = Field(0.01, ge=0, description="Metres a footprint may cross a wall.")
     door_clearance: float = Field(0.9, gt=0, description="Depth of the free zone in front of a door.")
     walkway_width: float = Field(0.6, gt=0)
+    deliberate_min_offset: float = Field(
+        0.15,
+        ge=0,
+        description="A waived floating or sunk check still flags gaps smaller than this: near misses are mistakes, not art.",
+    )
+    deliberate_min_tilt_deg: float = Field(
+        15.0, ge=0, le=180, description="Likewise for a waived upright check: small tilts are still flagged."
+    )
+    ask_when_unexplained: bool = Field(
+        True,
+        description="Large unexplained breaks in a scene whose brief allows oddness are asked about, not repaired.",
+    )
     scale_ratio: tuple[float, float] = Field((0.5, 2.0), description="Allowed multiple of the typical category size.")
     max_walkable_slope_deg: float = Field(35.0, gt=0, le=90)
     floor_covering_max_height: float = Field(
@@ -100,7 +116,9 @@ class ValidationRules(IRModel):
         Literal[
             "floating",
             "sunk",
+            "upright",
             "overlap",
+            "inside_wall",
             "out_of_bounds",
             "facing",
             "scale",
@@ -113,7 +131,9 @@ class ValidationRules(IRModel):
         default_factory=lambda: [
             "floating",
             "sunk",
+            "upright",
             "overlap",
+            "inside_wall",
             "out_of_bounds",
             "facing",
             "scale",
@@ -172,6 +192,17 @@ class World(IRModel):
         for root in self.nodes:
             yield from visit(root, None)
 
+    def waiver(self, node_id: str, check: str) -> Optional[Intent]:
+        """The intent that lets this node, or one of its ancestors, skip a check; None if it must pass."""
+        parents = {node.id: parent for node, parent in self.walk()}
+        current = self.node(node_id)
+        while current is not None:
+            for intent in current.intent:
+                if check in intent.allows:
+                    return intent
+            current = parents.get(current.id)
+        return None
+
     def node(self, node_id: str) -> Any:
         """Returns the node with this ID, or raises KeyError."""
         for node, _ in self.walk():
@@ -180,6 +211,34 @@ class World(IRModel):
         raise KeyError(node_id)
 
     # Cross-reference checks ------------------------------------------------------
+
+    @model_validator(mode="after")
+    def _intent_is_backed(self) -> "World":
+        """Every waiver quotes words the user really gave, and only the user waives the hard checks."""
+        errors: list[str] = []
+        for node, _ in self.walk():
+            for intent in node.intent:
+                hard = sorted(set(intent.allows) - PROMPT_WAIVABLE)
+                if hard and intent.source != "user":
+                    errors.append(f"'{node.id}': only the user can waive {', '.join(hard)}")
+                if self.brief is None:
+                    errors.append(f"'{node.id}': intent needs a brief to quote")
+                    continue
+                texts = {
+                    "prompt": [self.brief.prompt],
+                    "user": self.brief.messages + [self.brief.prompt],
+                    "image_brief": [r.caption or "" for r in self.brief.references if r.approved],
+                }[intent.source]
+                if not any(f" {_plain(intent.quote)} " in f" {_plain(t)} " for t in texts):
+                    where = {
+                        "prompt": "the prompt",
+                        "user": "the user's messages",
+                        "image_brief": "an approved reference caption",
+                    }
+                    errors.append(f"'{node.id}': quote '{intent.quote}' is not in {where[intent.source]}")
+        if errors:
+            raise ValueError("; ".join(errors))
+        return self
 
     @model_validator(mode="after")
     def _references_resolve(self) -> "World":
@@ -287,3 +346,8 @@ def _iter_tree(node: Any) -> Iterator[Any]:
     yield node
     for child in node.children:
         yield from _iter_tree(child)
+
+
+def _plain(text: str) -> str:
+    """Lowercase words only, so quotes match whatever the case, spacing and punctuation."""
+    return " ".join(re.findall(r"[\w']+", text.lower()))

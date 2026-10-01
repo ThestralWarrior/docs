@@ -46,7 +46,7 @@ The repair model edits the World IR with actions; the result is lowered again an
 | Registries | assets, materials (38 presets), prefabs | wood, metal, glass, terrain, lava, acid, ice, hull, neon |
 | Repair actions | 12 in 3 tiers | move, rotate, scale; set support, reparent, swap asset, set material, set param, add node, remove node; add or remove relation |
 
-In total the world format has 164 object types and 740 documented fields; with the lowered scene format, 179 and 829.
+In total the world format has 165 object types and 749 documented fields; with the lowered scene format, 180 and 838.
 
 Every object and field carries a tier:
 
@@ -55,6 +55,27 @@ Every object and field carries a tier:
 - **later**: designed so the format won't need to change, but not planned: water bodies, audio, particles, decals, weather.
 
 The world can describe much more than the repair model may change. The v1 repair model only edits `xform.pos`, `xform.yaw` and `xform.scale`.
+
+## Deliberate oddness
+
+Validators never decide what a scene should look like; they check that it matches what it says it intends. A horror room with a chair stuck to the ceiling must not be "repaired" back to the floor, so the builder writes the intent down, with the user's own words as evidence:
+
+```json
+{ "kind": "asset", "id": "ceiling_chair", "asset": "chair_desk",
+  "support": { "on": "ceiling" }, "xform": { "pos": [2.5, 2.6, 2.1], "rot": [180, 40, 0] },
+  "intent": [{ "allows": ["upright"], "source": "prompt", "quote": "a chair stuck upside down on the ceiling" }] }
+```
+
+- Only the waived check is skipped. The chair is still checked against the ceiling, so if it hangs 10 cm low the repair moves it up, toward what was asked.
+- The quote must appear in the prompt (`source: prompt`), in a later user message (`brief.messages`, `source: user`) or in an approved reference caption (`source: image_brief`). A builder cannot excuse its own mistakes by calling them deliberate.
+- Floating, sunk, upright, overlap, facing and scale can be waived from the prompt. Inside-wall, out-of-bounds, door clearance and reachability can only be waived by the user.
+- Near misses are still mistakes: a waived check keeps flagging gaps under `rules.deliberate_min_offset` (15 cm) and tilts under `rules.deliberate_min_tilt_deg` (15°). Nobody floats a lamp 3 cm on purpose.
+- A waiver covers the node and everything under it. `World.waiver(node_id, check)` returns the intent that applies, or `None`.
+- Large breaks that nothing explains, in a scene whose brief allows oddness, are asked about rather than repaired (`rules.ask_when_unexplained`).
+
+`examples/horror_room.json` uses all of this: a chair on the ceiling, a floating, flickering lamp, a bed shoved against the door and a nightstand the user asked to keep tipped over.
+
+![Horror room: a chair on the ceiling, a floating lamp, a tipped-over nightstand](docs/horror_room.png)
 
 ## Conventions
 
@@ -85,11 +106,11 @@ world_ir/        Pydantic models: the schema itself
   terrain_eval.py  noise, terrain edits, layers, ground height
   geometry.py      matrices, colour, roof, dome, rock and sweep meshes
   snap.py          put terrain-supported nodes on the ground
-examples/        minimal.json, bedroom.json, cabin_clearing.json, scifi_colony.json
+examples/        minimal.json, bedroom.json, horror_room.json, cabin_clearing.json, scifi_colony.json
 viewer/          three.js loader (src/loader.js), demo page, lowered scenes, Kenney CC0 furniture, nature and space models
 schema/          generated JSON Schemas for worlds, actions and lowered scenes
 docs/            generated REFERENCE.md and catalogue.json
-tests/           validation, cross-reference and action tests
+tests/           validation, cross-reference, intent, lowering and action tests
 ```
 
 ## Use
