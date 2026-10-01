@@ -69,10 +69,12 @@ function slabGeometry(polygon, thickness) {
 }
 
 export class WorldView extends EventTarget {
-  constructor(container, { assetBase = "./", debug = false } = {}) {
+  // assetData: optional map of asset URI → GLB bytes (ArrayBuffer or base64), for pages that cannot serve .glb files.
+  constructor(container, { assetBase = "./", assetData = null, debug = false } = {}) {
     super();
     this.container = container;
     this.assetBase = assetBase;
+    this.assetData = assetData;
     this.options = { cutaway: true, zones: debug, boxes: debug, ceiling: false };
     this.renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -251,7 +253,15 @@ export class WorldView extends EventTarget {
   }
 
   async glb(uri) {
-    if (!this.glbCache.has(uri)) this.glbCache.set(uri, this.gltf.loadAsync(new URL(uri, new URL(this.assetBase, location.href)).href));
+    if (!this.glbCache.has(uri)) {
+      const embedded = this.assetData?.[uri];
+      this.glbCache.set(
+        uri,
+        embedded
+          ? this.gltf.parseAsync(toArrayBuffer(embedded), "")
+          : this.gltf.loadAsync(new URL(uri, new URL(this.assetBase, location.href)).href),
+      );
+    }
     return this.glbCache.get(uri);
   }
 
@@ -477,6 +487,14 @@ export class WorldView extends EventTarget {
     this.warnings.push(message);
     console.warn(`[world-view] ${message}`);
   }
+}
+
+function toArrayBuffer(data) {
+  if (data instanceof ArrayBuffer) return data;
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
 }
 
 function isShown(object) {
