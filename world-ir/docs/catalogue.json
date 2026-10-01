@@ -8601,6 +8601,26 @@
               "tier": "v1",
               "ref": null,
               "repair": null
+            },
+            {
+              "name": "segments",
+              "type": "integer (optional)",
+              "limits": "≥3",
+              "default": "none",
+              "description": "Round shapes: facets around. Low values look low-poly.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "flat",
+              "type": "boolean",
+              "limits": "",
+              "default": "false",
+              "description": "Flat shading, for a faceted low-poly look.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
             }
           ]
         },
@@ -8639,6 +8659,219 @@
               "limits": "",
               "default": "required",
               "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LHeightfield",
+          "tag": {
+            "field": "type",
+            "value": "heightfield"
+          },
+          "tier": "v1",
+          "summary": "Terrain heights on a regular grid centred on the item's origin.",
+          "fields": [
+            {
+              "name": "size",
+              "type": "[number × 2]",
+              "limits": "",
+              "default": "required",
+              "description": "[width along x, depth along z] in metres.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "rows",
+              "type": "integer",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "cols",
+              "type": "integer",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "heights",
+              "type": "list[number]",
+              "limits": "",
+              "default": "required",
+              "description": "rows × cols heights, row-major, starting at -x, -z.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "layer_materials",
+              "type": "list[string]",
+              "limits": "",
+              "default": "auto",
+              "description": "Material of each painted layer.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "layers",
+              "type": "list[integer]",
+              "limits": "",
+              "default": "auto",
+              "description": "Layer index at each vertex, same order as heights.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LMesh",
+          "tag": {
+            "field": "type",
+            "value": "mesh"
+          },
+          "tier": "v1",
+          "summary": "Explicit triangles: roofs, rocks, path ribbons.",
+          "fields": [
+            {
+              "name": "positions",
+              "type": "list[number]",
+              "limits": "",
+              "default": "required",
+              "description": "Flat [x, y, z, ...] in local space.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "indices",
+              "type": "list[integer]",
+              "limits": "",
+              "default": "required",
+              "description": "Three per triangle, counter-clockwise seen from outside.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "flat",
+              "type": "boolean",
+              "limits": "",
+              "default": "true",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "double_sided",
+              "type": "boolean",
+              "limits": "",
+              "default": "false",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LInstances",
+          "tag": {
+            "field": "type",
+            "value": "instances"
+          },
+          "tier": "v1",
+          "summary": "Many copies of one asset or shape: forests, grass, flowers, pickets.",
+          "fields": [
+            {
+              "name": "asset",
+              "type": "string (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "Asset to copy; or give shape, size and material.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "shape",
+              "type": "\"box\" | \"sphere\" | \"cylinder\" | \"cone\" (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "size",
+              "type": "[number × 3] (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "material",
+              "type": "string (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "segments",
+              "type": "integer (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "flat",
+              "type": "boolean",
+              "limits": "",
+              "default": "false",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "transforms",
+              "type": "list[[number × 5]]",
+              "limits": "",
+              "default": "required",
+              "description": "One [x, y, z, yaw_deg, scale] per copy, in the item's local space.",
               "tier": "v1",
               "ref": null,
               "repair": null

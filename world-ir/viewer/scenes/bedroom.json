@@ -3,7 +3,7 @@
  "world_id": "cosy_bedroom",
  "versions": {
   "ir": "1.0",
-  "lowering": "0.1.0",
+  "lowering": "0.2.0",
   "three": "0.186.1"
  },
  "environment": {
@@ -319,7 +319,8 @@
    "facing": [
     0.0,
     -1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bedroom/wall0/0_above",
@@ -367,7 +368,8 @@
    "facing": [
     0.0,
     -1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bedroom/wall0/d1",
@@ -415,7 +417,8 @@
    "facing": [
     0.0,
     -1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bedroom/wall0/d1/clearance",
@@ -512,7 +515,8 @@
    "facing": [
     0.0,
     -1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bedroom/wall1/end",
@@ -560,7 +564,8 @@
    "facing": [
     1.0,
     0.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bedroom/wall2/0_before",
@@ -608,7 +613,8 @@
    "facing": [
     0.0,
     1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bedroom/wall2/0_above",
@@ -656,7 +662,8 @@
    "facing": [
     0.0,
     1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bedroom/wall2/0_below",
@@ -704,7 +711,8 @@
    "facing": [
     0.0,
     1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bedroom/wall2/w1",
@@ -752,7 +760,8 @@
    "facing": [
     0.0,
     1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bedroom/wall2/end",
@@ -800,7 +809,8 @@
    "facing": [
     0.0,
     1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bedroom/wall3/end",
@@ -848,7 +858,8 @@
    "facing": [
     -1.0,
     0.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "bed",
@@ -1164,7 +1175,8 @@
     0.01,
     1.4
    ],
-   "material": "_c_2f5a46"
+   "material": "_c_2f5a46",
+   "flat": false
   },
   {
    "id": "rug/field",
@@ -1208,7 +1220,8 @@
     0.012,
     1.16
    ],
-   "material": "_c_c9b79c"
+   "material": "_c_c9b79c",
+   "flat": false
   },
   {
    "id": "ceiling_light",

@@ -29,20 +29,20 @@ function applyMatrix(object, matrix) {
   new THREE.Matrix4().fromArray(matrix).decompose(object.position, object.quaternion, object.scale);
 }
 
-function shapeGeometry(shape, [w, h, d]) {
+function shapeGeometry(shape, [w, h, d], segments) {
   let g;
   switch (shape) {
     case "box":
       g = new THREE.BoxGeometry(w, h, d);
       break;
     case "sphere":
-      g = new THREE.SphereGeometry(0.5, 32, 16).scale(w, h, d);
+      g = new THREE.SphereGeometry(0.5, segments ?? 32, Math.max(3, Math.round((segments ?? 32) / 2))).scale(w, h, d);
       break;
     case "cylinder":
-      g = new THREE.CylinderGeometry(0.5, 0.5, 1, 48).scale(w, h, d);
+      g = new THREE.CylinderGeometry(0.5, 0.5, 1, segments ?? 48).scale(w, h, d);
       break;
     case "cone":
-      g = new THREE.ConeGeometry(0.5, 1, 48).scale(w, h, d);
+      g = new THREE.ConeGeometry(0.5, 1, segments ?? 48).scale(w, h, d);
       break;
     case "capsule":
       g = new THREE.CapsuleGeometry(0.25, 0.5, 8, 24).scale(w * 2, h, d * 2);
@@ -203,8 +203,11 @@ export class WorldView extends EventTarget {
   async addItem(item) {
     let object;
     if (item.type === "asset") object = await this.makeAsset(item);
-    else if (item.type === "shape") object = new THREE.Mesh(shapeGeometry(item.shape, item.size), this.material(item.material));
+    else if (item.type === "shape") object = new THREE.Mesh(shapeGeometry(item.shape, item.size, item.segments), this.material(item.material, { flat: item.flat }));
     else if (item.type === "slab") object = new THREE.Mesh(slabGeometry(item.polygon, item.thickness), this.material(item.material));
+    else if (item.type === "heightfield") object = this.makeHeightfield(item);
+    else if (item.type === "mesh") object = this.makeMesh(item);
+    else if (item.type === "instances") object = await this.makeInstances(item);
     else if (item.type === "light") object = this.makeLight(item);
     else if (item.type === "camera") {
       this.cameras.set(item.id, item);
@@ -219,7 +222,7 @@ export class WorldView extends EventTarget {
     object.userData = { node: item.node, item: item.id, role: item.role, facing: item.facing };
     object.traverse((o) => {
       if (o.isMesh) {
-        o.castShadow = item.role !== "rug" && item.role !== "window";
+        o.castShadow = !["rug", "window", "water", "path", "terrain", "flowers"].includes(item.role) && !o.userData.noCast;
         o.receiveShadow = true;
         o.userData.node = item.node;
         o.userData.item = item.id;
@@ -246,10 +249,100 @@ export class WorldView extends EventTarget {
     return null;
   }
 
-  material(id) {
+  material(id, { flat = false, doubleSided = false } = {}) {
     const m = this.materials.get(id);
-    if (!m) this.warn(`unknown material '${id}'`);
-    return m ?? new THREE.MeshStandardMaterial({ color: 0xff00ff });
+    if (!m) {
+      this.warn(`unknown material '${id}'`);
+      return new THREE.MeshStandardMaterial({ color: 0xff00ff });
+    }
+    if (!flat && !doubleSided) return m;
+    const key = `${id}|${flat}|${doubleSided}`;
+    if (!this.materials.has(key)) {
+      const variant = m.clone();
+      variant.flatShading = flat;
+      if (doubleSided) variant.side = THREE.DoubleSide;
+      this.materials.set(key, variant);
+    }
+    return this.materials.get(key);
+  }
+
+  makeHeightfield(item) {
+    const { rows, cols, size, heights, layers, layer_materials: layerMaterials } = item;
+    const palette = layerMaterials.map((id) => new THREE.Color(this.lowered.materials[id]?.base_color ?? "#6f8a3a"));
+    const positions = new Float32Array(rows * cols * 3);
+    const colors = new Float32Array(rows * cols * 3);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const i = r * cols + c;
+        positions.set([-size[0] / 2 + (size[0] * c) / (cols - 1), heights[i], -size[1] / 2 + (size[1] * r) / (rows - 1)], i * 3);
+        const base = palette[layers.length ? layers[i] : 0] ?? palette[0];
+        const shade = 0.94 + 0.12 * (((i * 2654435761) >>> 0) / 4294967296); // gentle per-vertex variation
+        colors.set([base.r * shade, base.g * shade, base.b * shade], i * 3);
+      }
+    }
+    const index = [];
+    for (let r = 0; r < rows - 1; r++) {
+      for (let c = 0; c < cols - 1; c++) {
+        const a = r * cols + c, b = a + 1, below = a + cols, diag = below + 1;
+        index.push(a, below, b, b, below, diag);
+      }
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    geometry.setIndex(index);
+    const faceted = geometry.toNonIndexed();
+    faceted.computeVertexNormals();
+    const mesh = new THREE.Mesh(faceted, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, flatShading: true }));
+    mesh.userData.noCast = true;
+    return mesh;
+  }
+
+  makeMesh(item) {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(item.positions, 3));
+    geometry.setIndex(item.indices);
+    const final = item.flat ? geometry.toNonIndexed() : geometry;
+    final.computeVertexNormals();
+    return new THREE.Mesh(final, this.material(item.material, { flat: item.flat, doubleSided: item.double_sided }));
+  }
+
+  /** Many copies as InstancedMesh: one per sub-mesh of the asset, or one for a shape. */
+  async makeInstances(item) {
+    const group = new THREE.Group();
+    const count = item.transforms.length;
+    const placements = item.transforms.map(([x, y, z, yaw, s]) =>
+      new THREE.Matrix4().compose(
+        new THREE.Vector3(x, y, z),
+        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(yaw)),
+        new THREE.Vector3(s, s, s),
+      ),
+    );
+    const parts = [];
+    if (item.asset) {
+      const template = await this.makeAsset({ asset: item.asset, materials: {} });
+      template.updateMatrixWorld(true);
+      template.traverse((o) => o.isMesh && parts.push({ geometry: o.geometry, material: o.material, local: o.matrixWorld.clone() }));
+    } else {
+      parts.push({
+        geometry: shapeGeometry(item.shape, item.size, item.segments),
+        material: this.material(item.material, { flat: item.flat }),
+        local: new THREE.Matrix4(),
+      });
+    }
+    const tall = item.asset ? this.lowered.assets[item.asset].dims[1] > 1.4 : item.size?.[1] > 1.4;
+    for (const part of parts) {
+      const mesh = new THREE.InstancedMesh(part.geometry, part.material, count);
+      const m = new THREE.Matrix4();
+      placements.forEach((p, i) => mesh.setMatrixAt(i, m.multiplyMatrices(p, part.local)));
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.computeBoundingSphere();
+      mesh.castShadow = tall;
+      mesh.receiveShadow = true;
+      mesh.userData.noCast = !tall;
+      group.add(mesh);
+    }
+    return group;
   }
 
   async glb(uri) {

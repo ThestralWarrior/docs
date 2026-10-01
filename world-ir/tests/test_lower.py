@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT))
 
 from world_ir import World, apply_v1  # noqa: E402
 from world_ir.lower import apply, column_major, kelvin_to_hex, lower, rot_y  # noqa: E402
-from world_ir.lowered import THREE_VERSION, LoweredScene  # noqa: E402
+from world_ir.lowered import LOWERING_VERSION, THREE_VERSION, LoweredScene  # noqa: E402
 
 
 def world(name: str) -> World:
@@ -41,7 +41,7 @@ def test_lowering_is_deterministic_and_committed_scenes_are_fresh():
 
 
 def test_versions_are_recorded(bedroom):
-    assert bedroom.versions == {"ir": "1.0", "lowering": "0.1.0", "three": THREE_VERSION}
+    assert bedroom.versions == {"ir": "1.0", "lowering": LOWERING_VERSION, "three": THREE_VERSION}
 
 
 def test_item_ids_are_unique_and_point_back_to_real_nodes(bedroom):
@@ -120,12 +120,18 @@ def test_presets_are_resolved(bedroom):
 
 
 def test_unsupported_nodes_are_listed_and_their_children_still_lowered():
-    scene = lower(world("cabin_clearing.json"))
-    skipped = {u.node for u in scene.unsupported}
-    assert {"ground", "trail", "deck", "cabin", "forest", "picnic_1"} <= skipped
-    assert any(item.node == "porch_steps" for item in scene.items), "stairs under the skipped deck are lowered"
-    steps = [i for i in scene.items if i.node == "porch_steps"]
-    assert len(steps) == 3 and max(i.size[1] for i in steps) == pytest.approx(3 * 0.167)
+    data = json.loads((ROOT / "examples" / "bedroom.json").read_text())
+    data["nodes"][0]["children"].append(
+        {
+            "kind": "audio",
+            "id": "radio",
+            "uri": "radio.ogg",
+            "children": [{"kind": "primitive", "id": "radio_box", "shape": "box", "size": [0.3, 0.2, 0.15]}],
+        }
+    )
+    scene = lower(World.model_validate(data))
+    assert [(u.node, u.kind) for u in scene.unsupported] == [("radio", "audio")]
+    assert any(item.node == "radio_box" for item in scene.items), "its child is still lowered"
 
 
 def test_yaw_convention_matches_the_ir():

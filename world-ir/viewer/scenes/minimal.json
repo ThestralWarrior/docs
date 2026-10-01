@@ -3,7 +3,7 @@
  "world_id": "minimal",
  "versions": {
   "ir": "1.0",
-  "lowering": "0.1.0",
+  "lowering": "0.2.0",
   "three": "0.186.1"
  },
  "environment": {
@@ -217,7 +217,8 @@
    "facing": [
     0.0,
     -1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "room/wall1/end",
@@ -265,7 +266,8 @@
    "facing": [
     1.0,
     0.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "room/wall2/end",
@@ -313,7 +315,8 @@
    "facing": [
     0.0,
     1.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "room/wall3/end",
@@ -361,7 +364,8 @@
    "facing": [
     -1.0,
     0.0
-   ]
+   ],
+   "flat": false
   },
   {
    "id": "crate_1",

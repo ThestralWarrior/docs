@@ -14,11 +14,17 @@ Builder agent → World IR (agent writes nodes and relations; code fills asset a
 
 The repair model edits the World IR with actions; the result is lowered again and the viewer animates the change.
 
-- **Lowering** turns rooms into a floor, a ceiling, wall pieces cut around doors and windows, door panels, window glass and door clearance zones; turns generators into simple shapes; fills in material presets; and flattens nested transforms into world matrices. Version 1 handles room, asset, primitive, group, light, camera, zone and the rug, straight-stairs, wall-run and array generators. Anything else is listed in `unsupported` and skipped, while its children are still lowered.
+- **Lowering** turns rooms into a floor, a ceiling, wall pieces cut around doors and windows, door panels, window glass and door clearance zones; evaluates terrain (seeded noise, flatten, bump, smooth, carve-path, terrace and crater edits, material layers by height, slope and zone, a water level); lays paths on the ground; expands prefabs with per-instance overrides; scatters assets with area, spacing, slope, height and avoid rules; turns 22 generators into shapes, meshes and instances (platform, building with windows, door and roof, roof, column, ramp, railing, fence, procedural tree, rock and bush, grass, flower bed, along-path, radial array, table set, shelving, kitchen run, rug, straight stairs, wall run, array); fills in material presets; and flattens nested transforms into world matrices. Water bodies, decals, text, audio, particles and a few generators (arch, bridge, road, parking lot, curtains, shelf fill, non-straight stairs) are listed in `unsupported` and skipped, while their children are still lowered.
 - **The loader** only draws what lowering produced. It normalises each GLB (front to +Z, bottom centre to the origin, fitted to the asset's `dims`), tags every object with its IR node ID, highlights nodes, animates updates between two lowered scenes, and cuts away walls between the camera and the room.
 - **Versions** are pinned and recorded in every lowered scene: IR version, lowering version, and the three.js version. Three.js does not follow semver (r186 removed `PCFSoftShadowMap`, for example), so upgrade only on purpose.
 
 ![Bedroom example rendered by the loader](docs/bedroom.png)
+
+![Cabin clearing example: terrain, pond, trail, cabin on a deck, scattered forest](docs/cabin_overview.png)
+
+![Cabin clearing example from the campsite](docs/cabin_hero.png)
+
+**Snapping.** An agent can say an object stands on the terrain but cannot know the ground height there. `snap_to_ground` (and `scripts/snap.py`) sets the height of every terrain-supported node from the terrain, the same way code fills in asset sizes. Scatter, fences, flower beds and paths follow the ground on their own.
 
 ## What a world file can contain
 
@@ -32,7 +38,7 @@ The repair model edits the World IR with actions; the result is lowered again an
 | Registries | assets, materials (27 presets), prefabs | |
 | Repair actions | 12 in 3 tiers | move, rotate, scale; set support, reparent, swap asset, set material, set param, add node, remove node; add or remove relation |
 
-In total the world format has 155 object types and 685 documented fields; with the lowered scene format, 166 and 745.
+In total the world format has 155 object types and 685 documented fields; with the lowered scene format, 169 and 765.
 
 Every object and field carries a tier:
 
@@ -66,9 +72,13 @@ world_ir/        Pydantic models: the schema itself
   actions.py       repair actions, constrained_schema(), apply_v1()
   catalogue.py     reads the models for the generated docs
   lowered.py       the lowered scene format
-  lower.py         lowering: World IR → lowered scene
+  lower.py         lowering: World IR → lowered scene (rooms, terrain, paths, prefabs, scatter)
+  lower_generators.py  generators → shapes, meshes and instances
+  terrain_eval.py  noise, terrain edits, layers, ground height
+  geometry.py      matrices, colour, roof and rock meshes
+  snap.py          put terrain-supported nodes on the ground
 examples/        minimal.json, bedroom.json, cabin_clearing.json
-viewer/          three.js loader (src/loader.js), demo page, lowered scenes, Kenney CC0 models
+viewer/          three.js loader (src/loader.js), demo page, lowered scenes, Kenney CC0 furniture and nature models
 schema/          generated JSON Schemas for worlds, actions and lowered scenes
 docs/            generated REFERENCE.md and catalogue.json
 tests/           validation, cross-reference and action tests
@@ -82,6 +92,9 @@ pytest                                                    # schema, lowering and
 python scripts/build_docs.py                              # regenerate schema/ and docs/ after changing world_ir/
 python scripts/lower.py examples/*.json --out-dir viewer/scenes   # regenerate the scenes the viewer loads
 python scripts/measure_assets.py viewer/assets/kenney/furniture --scale 1.9   # asset dims from the GLBs (needs trimesh)
+python scripts/measure_assets.py viewer/assets/kenney/nature --height tree-pinetalla=9   # or a real height per model
+python scripts/fix_glb_metalness.py viewer/assets/kenney/nature   # some kits mark leaves and fabric as metal
+python scripts/snap.py examples/cabin_clearing.json                # ground heights for terrain-supported nodes
 
 cd viewer && npm install && npm run serve                 # then open http://localhost:8000/?scene=bedroom
 ```

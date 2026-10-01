@@ -14,7 +14,7 @@ from .common import Color, IRModel, Vec2, Vec3, cfg
 from .environment import Environment
 
 LOWERED_FORMAT = "lowered-1"
-LOWERING_VERSION = "0.1.0"
+LOWERING_VERSION = "0.2.0"
 THREE_VERSION = "0.186.1"
 
 Matrix = Annotated[
@@ -83,6 +83,8 @@ class LShape(ItemBase):
         None,
         description="Walls, doors and windows: outward normal in world [x, z], so the loader can cut away near walls.",
     )
+    segments: Optional[int] = Field(None, ge=3, description="Round shapes: facets around. Low values look low-poly.")
+    flat: bool = Field(False, description="Flat shading, for a faceted low-poly look.")
 
 
 class LSlab(ItemBase):
@@ -92,6 +94,44 @@ class LSlab(ItemBase):
     polygon: list[Vec2] = Field(description="Outline in local [x, z].")
     thickness: float
     material: str
+
+
+class LHeightfield(ItemBase):
+    """Terrain heights on a regular grid centred on the item's origin."""
+
+    type: Literal["heightfield"] = "heightfield"
+    size: Vec2 = Field(description="[width along x, depth along z] in metres.")
+    rows: int
+    cols: int
+    heights: list[float] = Field(description="rows × cols heights, row-major, starting at -x, -z.")
+    layer_materials: list[str] = Field(default_factory=list, description="Material of each painted layer.")
+    layers: list[int] = Field(default_factory=list, description="Layer index at each vertex, same order as heights.")
+
+
+class LMesh(ItemBase):
+    """Explicit triangles: roofs, rocks, path ribbons."""
+
+    type: Literal["mesh"] = "mesh"
+    positions: list[float] = Field(description="Flat [x, y, z, ...] in local space.")
+    indices: list[int] = Field(description="Three per triangle, counter-clockwise seen from outside.")
+    material: str
+    flat: bool = True
+    double_sided: bool = False
+
+
+class LInstances(ItemBase):
+    """Many copies of one asset or shape: forests, grass, flowers, pickets."""
+
+    type: Literal["instances"] = "instances"
+    asset: Optional[str] = Field(None, description="Asset to copy; or give shape, size and material.")
+    shape: Optional[Literal["box", "sphere", "cylinder", "cone"]] = None
+    size: Optional[Vec3] = None
+    material: Optional[str] = None
+    segments: Optional[int] = None
+    flat: bool = False
+    transforms: list[tuple[float, float, float, float, float]] = Field(
+        description="One [x, y, z, yaw_deg, scale] per copy, in the item's local space."
+    )
 
 
 class LLight(ItemBase):
@@ -134,7 +174,10 @@ class LZone(ItemBase):
     label: Optional[str] = None
 
 
-Item = Annotated[Union[LAssetItem, LShape, LSlab, LLight, LCamera, LZone], Field(discriminator="type")]
+Item = Annotated[
+    Union[LAssetItem, LShape, LSlab, LHeightfield, LMesh, LInstances, LLight, LCamera, LZone],
+    Field(discriminator="type"),
+]
 
 
 class Unsupported(IRModel):

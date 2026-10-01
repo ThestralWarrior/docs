@@ -1820,6 +1820,8 @@ What lowering produces from a world file, and what both the validators and the T
 | `size` | [number × 3] | required | v1 |  |
 | `material` | string | required | v1 |  |
 | `facing` | [number × 2] (optional) | none | v1 | Walls, doors and windows: outward normal in world [x, z], so the loader can cut away near walls. |
+| `segments` | integer (optional) | none | v1 | Round shapes: facets around. Low values look low-poly. (≥3) |
+| `flat` | boolean | false | v1 | Flat shading, for a faceted low-poly look. |
 
 #### `type: "slab"` · LSlab
 
@@ -1830,6 +1832,45 @@ What lowering produces from a world file, and what both the validators and the T
 | `polygon` | list[[number × 2]] | required | v1 | Outline in local [x, z]. |
 | `thickness` | number | required | v1 |  |
 | `material` | string | required | v1 |  |
+
+#### `type: "heightfield"` · LHeightfield
+
+*Tier v1.* Terrain heights on a regular grid centred on the item's origin.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `size` | [number × 2] | required | v1 | [width along x, depth along z] in metres. |
+| `rows` | integer | required | v1 |  |
+| `cols` | integer | required | v1 |  |
+| `heights` | list[number] | required | v1 | rows × cols heights, row-major, starting at -x, -z. |
+| `layer_materials` | list[string] | auto | v1 | Material of each painted layer. |
+| `layers` | list[integer] | auto | v1 | Layer index at each vertex, same order as heights. |
+
+#### `type: "mesh"` · LMesh
+
+*Tier v1.* Explicit triangles: roofs, rocks, path ribbons.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `positions` | list[number] | required | v1 | Flat [x, y, z, ...] in local space. |
+| `indices` | list[integer] | required | v1 | Three per triangle, counter-clockwise seen from outside. |
+| `material` | string | required | v1 |  |
+| `flat` | boolean | true | v1 |  |
+| `double_sided` | boolean | false | v1 |  |
+
+#### `type: "instances"` · LInstances
+
+*Tier v1.* Many copies of one asset or shape: forests, grass, flowers, pickets.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `asset` | string (optional) | none | v1 | Asset to copy; or give shape, size and material. |
+| `shape` | "box" \| "sphere" \| "cylinder" \| "cone" (optional) | none | v1 |  |
+| `size` | [number × 3] (optional) | none | v1 |  |
+| `material` | string (optional) | none | v1 |  |
+| `segments` | integer (optional) | none | v1 |  |
+| `flat` | boolean | false | v1 |  |
+| `transforms` | list[[number × 5]] | required | v1 | One [x, y, z, yaw_deg, scale] per copy, in the item's local space. |
 
 #### `type: "light"` · LLight
 

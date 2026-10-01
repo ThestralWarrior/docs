@@ -1,0 +1,8 @@
+Nature Kit by Kenney (www.kenney.nl)
+
+License: Creative Commons Zero, CC0
+http://creativecommons.org/publicdomain/zero/1.0/
+
+Free to use in personal, educational and commercial projects. Crediting Kenney is
+appreciated but not required. Files fetched from the CC0 mirror
+https://github.com/Hidencod/tge-assets (packs/nature-kit), which embeds textures into each .glb.
