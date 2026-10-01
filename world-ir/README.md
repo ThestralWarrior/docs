@@ -1,0 +1,95 @@
+# World IR
+
+The single source of truth for a generated 3D world. A world file is JSON, but its contents are a typed IR (intermediate representation): a scene tree of typed nodes, registries of assets and materials, terrain, parametric generators, declared relations, and checking rules. Three.js rendering, validators, the repair model's input text and the repair actions are all passes over this one file.
+
+The full field-by-field reference is in [`docs/REFERENCE.md`](docs/REFERENCE.md). It is generated from the code, so it always matches the schema.
+
+## What a world file can contain
+
+| Part | Count | Examples |
+|---|---|---|
+| Node kinds | 18 | group, asset, primitive, generator, prefab, room, terrain, water, path, scatter, zone, light, camera, marker, decal, text, audio, particles |
+| Generators | 27 | stairs, ramp, roof, wall run, column, arch, fence, railing, bridge, building, platform, shelving, table set, kitchen run, shelf fill, rug, curtains, tree, rock, bush, grass, flower bed, road, along-path, parking lot, array, radial array |
+| Terrain | 4 height sources, 7 edits, painted layers | noise, grid, image, flat; flatten, bump, smooth, carve path, terrace, crater, erosion |
+| Relations | 46 in 7 groups | on, against wall, faces, near, around, clear, not blocking, walkway, count, requires, no overlap, max slope |
+| Environment | sky (4 types), sun, ambient, fog (2 types), tone mapping, weather, wind | |
+| Registries | assets, materials (27 presets), prefabs | |
+| Repair actions | 12 in 3 tiers | move, rotate, scale; set support, reparent, swap asset, set material, set param, add node, remove node; add or remove relation |
+
+In total there are about 150 object types and 685 documented fields.
+
+Every object and field carries a tier:
+
+- **v1**: needed for the hackathon build: rooms, assets, lights, cameras, zones, the core relations and the v1 repair actions.
+- **v2**: stretch: terrain, most generators, scatter, paths, prefabs, physics.
+- **later**: designed so the format won't need to change, but not planned: water, audio, particles, decals, weather, behaviours.
+
+The world can describe much more than the repair model may change. The v1 repair model only edits `xform.pos`, `xform.yaw` and `xform.scale`.
+
+## Conventions
+
+- Metres, degrees, kilograms. +Y up, right-handed. An asset's front faces +Z (glTF).
+- An asset's origin is the bottom centre of its box, so `pos[1]` is the height of its base.
+- Transforms are local to the parent node: a lamp on a nightstand moves with it.
+- IDs are lowercase slugs, unique across the file. Walls are `"<room_id>:<edge>"`.
+- Unknown fields are rejected. Tool-specific data goes in `extras`.
+
+## Layout
+
+```
+world_ir/        Pydantic models: the schema itself
+  common.py        shared types, Transform, Support, Semantic, Physics, Provenance
+  environment.py   sky, sun, ambient, fog, weather, wind
+  assets.py        AssetDef, Material, material presets
+  architecture.py  Opening (doors, windows), RoofSpec
+  terrain.py       height sources, terrain edits, material layers
+  generators.py    the 27 parametric generators
+  nodes.py         the 18 node kinds
+  relations.py     the 46 relations
+  world.py         World, Brief, ValidationRules, Prefab, cross-reference checks
+  actions.py       repair actions, constrained_schema(), apply_v1()
+  catalogue.py     reads the models for the generated docs
+examples/        minimal.json, bedroom.json, cabin_clearing.json
+schema/          generated JSON Schemas for worlds and actions
+docs/            generated REFERENCE.md and catalogue.json
+tests/           validation, cross-reference and action tests
+```
+
+## Use
+
+```bash
+pip install -e ".[dev]"
+pytest                          # 22 tests
+python scripts/build_docs.py    # regenerate schema/ and docs/ after changing world_ir/
+```
+
+```python
+from world_ir import World, apply_v1, constrained_schema
+
+world = World.model_validate_json(open("examples/bedroom.json").read())
+
+# JSON Schema for one repair answer on this world. Object IDs are an enum of the
+# world's unlocked nodes, so a model decoding with it cannot name a missing object.
+schema = constrained_schema(world, tier="v1")
+
+fixed = apply_v1(world, [{"action": "move", "id": "desk_chair", "to": [0.9, 0, 2.4]}])
+```
+
+Loading a world checks more than field types: every reference to a node, asset, material, prefab, opening, zone, path or wall must resolve, node IDs must be unique, openings must fit their walls, and nodes may use at most one way of giving a rotation.
+
+## What does not go in the world file
+
+Keep these in separate files that point at the world by ID:
+
+- Validator results (the issue list).
+- The history of actions applied, with before and after.
+- Training labels, such as which bug the injector planted. The world only marks injected nodes with `source.by = "injector"`.
+- Renders and screenshots.
+
+## Adding to the IR
+
+1. Add a model with a literal tag (`kind`, `gen`, `rel` or `action`), a docstring and a description on every field. Set its tier with `model_config = cfg("v2")`.
+2. Add it to the union and to the group list at the bottom of its module.
+3. Mark fields that name other objects with `json_schema_extra=ref("node")` (or `asset`, `material`, ...); the world then checks them on load.
+4. Run `python scripts/build_docs.py` and `pytest`. A test fails if the generated schema is stale.
+5. Implement it where it is used: the Three.js generator, the validators, or both. A kind that no pass understands should stay at tier `later`.

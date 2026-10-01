@@ -1,0 +1,224 @@
+{
+  "ir_version": "1.0",
+  "id": "cabin_clearing",
+  "name": "Cabin in a pine clearing",
+  "seed": 7,
+  "brief": {
+    "prompt": "A log cabin in a pine forest clearing with a campfire, a picnic table and a trail leading in.",
+    "setting": "exterior",
+    "archetype": "forest_clearing",
+    "style": ["low_poly"],
+    "season": "autumn",
+    "time_of_day": "17:40",
+    "mood": ["quiet", "warm"],
+    "required": [
+      { "category": "cabin", "source": "prompt" },
+      { "category": "campfire", "source": "prompt" },
+      { "category": "picnic table", "source": "prompt" },
+      { "category": "pine tree", "min": 20, "source": "image_brief", "confidence": 0.83 },
+      { "category": "bench", "source": "image_brief", "confidence": 0.58 }
+    ],
+    "references": [
+      { "url": "https://example.com/refs/cabin-clearing-01.jpg", "license": "CC-BY-2.0", "caption": "Log cabin with porch, pines behind, gravel path.", "relevance": 0.9, "approved": true },
+      { "url": "https://example.com/refs/cabin-clearing-02.jpg", "license": "CC0-1.0", "caption": "Stone fire ring with two benches facing it.", "relevance": 0.8, "approved": true }
+    ]
+  },
+  "environment": {
+    "sky": { "type": "procedural", "turbidity": 6, "rayleigh": 1.8 },
+    "sun": { "elevation_deg": 18, "azimuth_deg": 240, "kelvin": 4300, "intensity_lux": 2.6 },
+    "ambient": { "type": "hemisphere", "color": "#ffe9cc", "ground_color": "#4a5a3a", "intensity": 0.5 },
+    "fog": { "type": "exp2", "color": "#d9c9b0", "density": 0.012 },
+    "time_of_day": "17:40",
+    "tone_mapping": "agx",
+    "wind": { "direction_deg": 60, "speed_m_s": 3 }
+  },
+  "materials": {
+    "grass": { "preset": "grass", "base_color": "#6f8a3a" },
+    "dirt": { "preset": "dirt" },
+    "rock": { "preset": "rock" },
+    "logs": { "preset": "wood_pine", "base_color": "#8a5d3b", "roughness": 0.8 },
+    "shingle": { "base_color": "#4a3a33", "roughness": 0.9, "tags": ["roof"] }
+  },
+  "assets": {
+    "pine_tall": {
+      "source": "kenney",
+      "uri": "assets/kenney/nature/tree_pineTallA.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "pine tree",
+      "synset": "pine.n.01",
+      "dims": [2.4, 7.5, 2.4],
+      "style": ["low_poly"]
+    },
+    "oak": {
+      "source": "kenney",
+      "uri": "assets/kenney/nature/tree_oak.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "oak tree",
+      "dims": [4.0, 6.0, 4.0]
+    },
+    "boulder": {
+      "source": "kenney",
+      "uri": "assets/kenney/nature/rock_largeA.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "rock",
+      "dims": [1.6, 1.0, 1.4]
+    },
+    "campfire": {
+      "source": "kenney",
+      "uri": "assets/kenney/nature/campfire_stones.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "campfire",
+      "dims": [1.2, 0.4, 1.2]
+    },
+    "bench": {
+      "source": "kenney",
+      "uri": "assets/kenney/nature/log_bench.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "bench",
+      "dims": [1.6, 0.45, 0.4],
+      "surfaces": [{ "name": "seat", "height": 0.45 }]
+    },
+    "picnic_table": {
+      "source": "kenney",
+      "uri": "assets/kenney/nature/table_picnic.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "picnic table",
+      "dims": [1.8, 0.75, 0.8],
+      "surfaces": [{ "name": "top", "height": 0.75 }]
+    }
+  },
+  "prefabs": {
+    "picnic_set": {
+      "name": "Picnic set",
+      "description": "A picnic table with a bench on each long side.",
+      "nodes": [
+        { "kind": "asset", "id": "table", "asset": "picnic_table" },
+        { "kind": "asset", "id": "bench_n", "asset": "bench", "xform": { "pos": [0, 0, -0.75], "yaw": 0 } },
+        { "kind": "asset", "id": "bench_s", "asset": "bench", "xform": { "pos": [0, 0, 0.75], "yaw": 180 } }
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "kind": "terrain",
+      "id": "ground",
+      "size": [80, 80],
+      "resolution": 129,
+      "height": { "source": "noise", "algorithm": "simplex", "seed": 7, "octaves": 4, "frequency": 0.03, "amplitude": 3.0 },
+      "modifiers": [
+        { "op": "flatten", "area": { "center": [0, 0], "radius": 9 }, "height": 0.5, "falloff": 4 },
+        { "op": "carve_path", "path": "trail", "depth": 0.1, "width": 2.0, "falloff": 1.5 },
+        { "op": "smooth", "iterations": 2 }
+      ],
+      "layers": [
+        { "material": "grass" },
+        { "material": "rock", "rule": { "slope_min_deg": 25 } },
+        { "material": "dirt", "rule": { "zone": "campsite", "blend": 1.0 } }
+      ]
+    },
+    {
+      "kind": "path",
+      "id": "trail",
+      "purpose": "trail",
+      "points": [[-38, 0, 12], [-22, 0, 8], [-10, 0, 5], [0, 0, 2.6]],
+      "width": 1.5,
+      "material": "dirt"
+    },
+    {
+      "kind": "zone",
+      "id": "campsite",
+      "purpose": "activity",
+      "label": "campsite",
+      "area": [[9, 0], [6.4, 6.4], [0, 9], [-6.4, 6.4], [-9, 0], [-6.4, -6.4], [0, -9], [6.4, -6.4]],
+      "y_range": [0, 6]
+    },
+    {
+      "kind": "generator",
+      "id": "deck",
+      "xform": { "pos": [0, 0.5, -2] },
+      "support": { "on": "terrain" },
+      "generator": { "gen": "platform", "footprint": [8, 7], "height": 0.5, "legs": "posts", "material": "logs" },
+      "children": [
+        {
+          "kind": "generator",
+          "id": "cabin",
+          "semantic": { "category": "cabin", "function": "shelter" },
+          "xform": { "pos": [0, 0.5, -0.5] },
+          "support": { "on": "node", "target": "deck", "surface": "top" },
+          "generator": {
+            "gen": "building",
+            "footprint": [6, 5],
+            "floors": 1,
+            "floor_height": 2.8,
+            "roof": { "style": "gable", "pitch_deg": 35, "overhang": 0.4, "material": "shingle" },
+            "windows": { "per_floor": 2, "width": 0.9, "height": 1.1, "sill": 0.9 },
+            "entrance": { "id": "cabin_door", "type": "door", "wall": 2, "offset": 3.0, "width": 0.9, "height": 2.0, "swing": "in" },
+            "facade_style": ["log", "rustic"],
+            "wall_material": "logs"
+          }
+        },
+        {
+          "kind": "generator",
+          "id": "porch_steps",
+          "xform": { "pos": [0, 0, 4.34], "yaw": 180 },
+          "support": { "on": "terrain" },
+          "generator": { "gen": "stairs", "steps": 3, "rise": 0.167, "run": 0.28, "width": 1.4, "railing": "none", "material": "logs" }
+        }
+      ]
+    },
+    {
+      "kind": "asset",
+      "id": "fire",
+      "asset": "campfire",
+      "xform": { "pos": [5, 0.5, 5] },
+      "support": { "on": "terrain" },
+      "children": [
+        { "kind": "light", "id": "fire_glow", "type": "point", "kelvin": 1900, "intensity": 80, "range": 12, "cast_shadows": true, "xform": { "pos": [0, 0.6, 0] }, "behaviors": [{ "preset": "flicker", "params": { "amount": 0.3 } }] },
+        { "kind": "particles", "id": "fire_flames", "preset": "fire", "rate": 60, "area": [0.6, 0.8, 0.6], "xform": { "pos": [0, 0.3, 0] } }
+      ]
+    },
+    { "kind": "asset", "id": "fire_bench", "asset": "bench", "xform": { "pos": [5, 0.5, 7], "yaw": 180 }, "support": { "on": "terrain" } },
+    { "kind": "prefab", "id": "picnic_1", "prefab": "picnic_set", "xform": { "pos": [-5, 0.5, 5], "yaw": 20 }, "support": { "on": "terrain" } },
+    {
+      "kind": "generator",
+      "id": "old_oak",
+      "xform": { "pos": [-7, 0.5, -5.5] },
+      "support": { "on": "terrain" },
+      "generator": { "gen": "tree", "species": "deciduous", "height": 9, "crown_radius": 2.5, "trunk_radius": 0.35, "season": "autumn", "leaf_color": "#c2702e", "seed": 11 }
+    },
+    {
+      "kind": "scatter",
+      "id": "forest",
+      "area": [[-40, -40], [40, -40], [40, 40], [-40, 40]],
+      "items": [
+        { "asset": "pine_tall", "weight": 4, "scale": [0.8, 1.3] },
+        { "asset": "oak", "weight": 1 },
+        { "asset": "boulder", "weight": 1, "scale": [0.5, 1.5] }
+      ],
+      "density": 0.02,
+      "min_spacing": 3,
+      "on": "terrain",
+      "max_slope_deg": 30,
+      "avoid": ["campsite", "trail", "deck"],
+      "seed": 3
+    },
+    { "kind": "marker", "id": "visitor_start", "purpose": "spawn", "xform": { "pos": [-36, 0, 12], "yaw": 70 } },
+    { "kind": "camera", "id": "hero_cam", "purpose": "hero", "fov_deg": 55, "xform": { "pos": [14, 4, 16] }, "look_at": "cabin" }
+  ],
+  "relations": [
+    { "rel": "faces", "a": "fire_bench", "b": "fire", "source": "image_brief" },
+    { "rel": "near", "a": "fire_bench", "b": "fire", "max": 1.5 },
+    { "id": "fire_safety", "rel": "far_from", "a": "fire", "b": "deck", "min": 3, "source": "default", "note": "Keep open flame away from the timber deck." },
+    { "rel": "clear", "around": "fire", "margin": 1.0, "sides": ["front", "back", "left", "right"] },
+    { "rel": "inside_region", "a": "picnic_1", "region": "campsite" },
+    { "rel": "max_slope", "region": "campsite", "max_deg": 8 },
+    { "rel": "walkway", "from": "visitor_start", "to": "porch_steps", "min_width": 1.0, "hard": false },
+    { "rel": "count", "category": "pine tree", "min": 20, "source": "image_brief" },
+    { "rel": "requires", "category": "campfire", "source": "prompt" }
+  ],
+  "rules": {
+    "max_walkable_slope_deg": 30,
+    "checks": ["floating", "sunk", "overlap", "out_of_bounds", "facing", "scale", "relations", "requirements"]
+  },
+  "provenance": { "by": "user", "note": "Hand-written example for the world IR reference." }
+}

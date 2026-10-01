@@ -1,0 +1,16 @@
+[project]
+name = "world-ir"
+version = "1.0.0"
+description = "Schema for generated 3D worlds: scene tree, assets, terrain, generators, relations and repair actions."
+requires-python = ">=3.10"
+dependencies = ["pydantic>=2.7"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "black>=24"]
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

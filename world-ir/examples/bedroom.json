@@ -1,0 +1,185 @@
+{
+  "ir_version": "1.0",
+  "id": "cosy_bedroom",
+  "name": "Cosy bedroom",
+  "seed": 42,
+  "brief": {
+    "prompt": "A small, cosy bedroom with a double bed, a desk for working and a reading lamp.",
+    "setting": "interior",
+    "archetype": "bedroom",
+    "style": ["low_poly", "scandinavian"],
+    "palette": ["#ece9e2", "#b58a5a", "#2f5a46"],
+    "time_of_day": "18:30",
+    "mood": ["cosy", "quiet"],
+    "required": [
+      { "category": "bed", "source": "prompt" },
+      { "category": "desk", "source": "prompt" },
+      { "category": "table lamp", "source": "prompt" },
+      { "category": "desk chair", "source": "archetype" },
+      { "category": "wardrobe", "source": "archetype", "confidence": 0.8 }
+    ],
+    "forbidden": ["television"]
+  },
+  "environment": {
+    "sky": { "type": "color", "color": "#e8b98a" },
+    "sun": { "elevation_deg": 12, "azimuth_deg": 200, "kelvin": 3800, "intensity_lux": 2.0 },
+    "ambient": { "type": "hemisphere", "color": "#fff4e6", "ground_color": "#6b5a4a", "intensity": 0.4 },
+    "time_of_day": "18:30",
+    "tone_mapping": "aces",
+    "exposure": 1.1
+  },
+  "materials": {
+    "oak_floor": { "preset": "floor_parquet", "base_color": "#a87a4f", "roughness": 0.5, "tags": ["wood", "floor"] },
+    "plaster": { "preset": "plaster_white", "base_color": "#ece9e2", "roughness": 0.9 },
+    "linen_green": { "preset": "fabric_velvet_green", "base_color": "#2f5a46", "roughness": 0.9 }
+  },
+  "assets": {
+    "bed_double": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/bedDouble.glb",
+      "license": { "spdx": "CC0-1.0", "attribution": "Kenney (kenney.nl)" },
+      "category": "bed",
+      "synset": "bed.n.01",
+      "dims": [1.6, 0.55, 2.1],
+      "front": "+z",
+      "placement": { "floor": true, "receptacle": true },
+      "surfaces": [{ "name": "top", "height": 0.55 }],
+      "material_slots": ["frame", "sheets"],
+      "style": ["low_poly"]
+    },
+    "nightstand": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/cabinetBedDrawer.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "nightstand",
+      "synset": "nightstand.n.01",
+      "dims": [0.45, 0.55, 0.4],
+      "placement": { "floor": true, "receptacle": true },
+      "surfaces": [{ "name": "top", "height": 0.55 }]
+    },
+    "lamp_table": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/lampRoundTable.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "table lamp",
+      "dims": [0.25, 0.45, 0.25],
+      "placement": { "floor": false, "on_object": true }
+    },
+    "desk": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/desk.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "desk",
+      "dims": [1.2, 0.75, 0.6],
+      "placement": { "floor": true, "receptacle": true },
+      "surfaces": [{ "name": "top", "height": 0.75 }]
+    },
+    "chair_desk": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/chairDesk.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "desk chair",
+      "synset": "chair.n.01",
+      "dims": [0.55, 0.95, 0.55],
+      "placement": { "floor": true }
+    },
+    "wardrobe": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/bookcaseClosedWide.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "wardrobe",
+      "dims": [1.0, 2.0, 0.6],
+      "placement": { "floor": true },
+      "states": { "open": [0, 1] }
+    }
+  },
+  "nodes": [
+    {
+      "kind": "room",
+      "id": "bedroom",
+      "room_type": "bedroom",
+      "outline": [[0, 0], [4.2, 0], [4.2, 3.6], [0, 3.6]],
+      "height": 2.6,
+      "floor_material": "oak_floor",
+      "wall_material": "plaster",
+      "openings": [
+        { "id": "d1", "type": "door", "wall": 0, "offset": 0.8, "width": 0.9, "height": 2.1, "swing": "in", "hinge": "left" },
+        { "id": "w1", "type": "window", "wall": 2, "offset": 2.1, "width": 1.2, "height": 1.2, "sill": 0.9 }
+      ],
+      "children": [
+        {
+          "kind": "asset",
+          "id": "bed",
+          "asset": "bed_double",
+          "semantic": { "category": "bed", "function": "sleep" },
+          "xform": { "pos": [3.13, 0, 1.9], "yaw": 270 },
+          "support": { "on": "floor" },
+          "materials": [{ "slot": "sheets", "material": "linen_green" }]
+        },
+        {
+          "kind": "asset",
+          "id": "nightstand",
+          "asset": "nightstand",
+          "xform": { "pos": [3.98, 0, 2.975], "yaw": 270 },
+          "support": { "on": "floor" },
+          "children": [
+            {
+              "kind": "asset",
+              "id": "reading_lamp",
+              "asset": "lamp_table",
+              "xform": { "pos": [0, 0.55, 0] },
+              "support": { "on": "node", "target": "nightstand", "surface": "top" },
+              "children": [
+                { "kind": "light", "id": "reading_lamp_bulb", "type": "point", "kelvin": 2700, "intensity": 40, "range": 6, "xform": { "pos": [0, 0.35, 0] } }
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "id": "work_corner",
+          "semantic": { "category": "work area", "group": "work_corner" },
+          "children": [
+            { "kind": "asset", "id": "desk", "asset": "desk", "xform": { "pos": [0.32, 0, 2.4], "yaw": 90 }, "support": { "on": "floor" } },
+            { "kind": "asset", "id": "desk_chair", "asset": "chair_desk", "xform": { "pos": [0.82, 0, 2.4], "yaw": 270 }, "support": { "on": "floor" } }
+          ]
+        },
+        {
+          "kind": "asset",
+          "id": "wardrobe",
+          "asset": "wardrobe",
+          "xform": { "pos": [3.1, 0, 0.32], "yaw": 0 },
+          "support": { "on": "floor" },
+          "state": { "open": 0 }
+        },
+        {
+          "kind": "generator",
+          "id": "rug",
+          "xform": { "pos": [1.9, 0, 1.9] },
+          "support": { "on": "floor" },
+          "generator": { "gen": "rug", "shape": "rectangle", "size": [2.0, 1.4], "pattern": "bordered", "colors": ["#c9b79c", "#2f5a46"] }
+        },
+        { "kind": "light", "id": "ceiling_light", "type": "point", "kelvin": 3000, "intensity": 120, "xform": { "pos": [2.1, 2.45, 1.8] } },
+        { "kind": "zone", "id": "wardrobe_front", "purpose": "clearance", "area": [[2.6, 0.62], [3.6, 0.62], [3.6, 1.08], [2.6, 1.08]], "y_range": [0, 2.0] },
+        { "kind": "camera", "id": "hero_cam", "purpose": "hero", "fov_deg": 70, "xform": { "pos": [0.4, 1.6, 0.4] }, "look_at": "bed" },
+        { "kind": "camera", "id": "plan_cam", "purpose": "top_down", "projection": "orthographic", "ortho_height": 4.5, "xform": { "pos": [2.1, 6, 1.8], "rot": [-90, 0, 0] } }
+      ]
+    }
+  ],
+  "relations": [
+    { "id": "bed_wall", "rel": "against_wall", "a": "bed", "wall": "bedroom:1", "side": "back", "source": "archetype" },
+    { "rel": "against_wall", "a": "nightstand", "wall": "bedroom:1", "side": "back" },
+    { "rel": "adjacent", "a": "nightstand", "b": "bed", "max_gap": 0.15 },
+    { "rel": "on", "a": "reading_lamp", "b": "nightstand", "surface": "top", "source": "prompt" },
+    { "rel": "against_wall", "a": "desk", "wall": "bedroom:3", "side": "back" },
+    { "id": "chair_faces_desk", "rel": "faces", "a": "desk_chair", "b": "desk", "tolerance_deg": 20 },
+    { "rel": "allow_overlap", "a": "desk_chair", "b": "desk", "max_fraction": 0.3 },
+    { "rel": "against_wall", "a": "wardrobe", "wall": "bedroom:0", "side": "back" },
+    { "rel": "clear", "zone": "wardrobe_front", "source": "default" },
+    { "rel": "not_blocking", "a": "bed", "opening": "d1", "source": "default" },
+    { "rel": "near", "a": "reading_lamp", "b": "bed", "max": 0.6, "hard": false, "weight": 0.5, "source": "prompt" },
+    { "rel": "requires", "category": "bed", "region": "bedroom", "source": "prompt" },
+    { "rel": "forbids", "category": "television", "source": "prompt" }
+  ],
+  "provenance": { "by": "user", "note": "Hand-written example for the world IR reference." }
+}

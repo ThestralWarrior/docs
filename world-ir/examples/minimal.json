@@ -1,0 +1,24 @@
+{
+  "ir_version": "1.0",
+  "id": "minimal",
+  "assets": {
+    "crate": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/cardboardBoxClosed.glb",
+      "license": { "spdx": "CC0-1.0" },
+      "category": "box",
+      "dims": [0.5, 0.4, 0.5]
+    }
+  },
+  "nodes": [
+    {
+      "kind": "room",
+      "id": "room",
+      "room_type": "storage",
+      "outline": [[0, 0], [3, 0], [3, 3], [0, 3]],
+      "children": [
+        { "kind": "asset", "id": "crate_1", "asset": "crate", "xform": { "pos": [1.5, 0, 1.5], "yaw": 15 } }
+      ]
+    }
+  ]
+}
