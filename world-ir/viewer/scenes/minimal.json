@@ -1,0 +1,420 @@
+{
+ "format": "lowered-1",
+ "world_id": "minimal",
+ "versions": {
+  "ir": "1.0",
+  "lowering": "0.1.0",
+  "three": "0.186.1"
+ },
+ "environment": {
+  "sky": {
+   "type": "gradient",
+   "zenith": "#6a9bd1",
+   "horizon": "#dfe9f2",
+   "ground": "#8a8478"
+  },
+  "ambient": {
+   "type": "hemisphere",
+   "color": "#ffffff",
+   "ground_color": "#6b6157",
+   "intensity": 0.6
+  },
+  "tone_mapping": "aces",
+  "exposure": 1.0,
+  "gravity_m_s2": -9.81
+ },
+ "materials": {
+  "_floor_parquet": {
+   "base_color": "#a87a4f",
+   "metallic": 0.0,
+   "roughness": 0.5,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false
+  },
+  "_plaster_white": {
+   "base_color": "#ece9e2",
+   "metallic": 0.0,
+   "roughness": 0.9,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false
+  }
+ },
+ "assets": {
+  "crate": {
+   "uri": "assets/kenney/furniture/cardboardBoxClosed.glb",
+   "dims": [
+    0.5,
+    0.4,
+    0.5
+   ],
+   "front": "+z"
+  }
+ },
+ "items": [
+  {
+   "id": "room/floor",
+   "node": "room",
+   "role": "floor",
+   "matrix": [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     0.0,
+     -0.1,
+     0.0
+    ],
+    [
+     3.0,
+     0.0,
+     3.0
+    ]
+   ],
+   "type": "slab",
+   "polygon": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     3.0,
+     0.0
+    ],
+    [
+     3.0,
+     3.0
+    ],
+    [
+     0.0,
+     3.0
+    ]
+   ],
+   "thickness": 0.1,
+   "material": "_floor_parquet"
+  },
+  {
+   "id": "room/ceiling",
+   "node": "room",
+   "role": "ceiling",
+   "matrix": [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    2.7,
+    0.0,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     0.0,
+     2.6,
+     0.0
+    ],
+    [
+     3.0,
+     2.7,
+     3.0
+    ]
+   ],
+   "type": "slab",
+   "polygon": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     3.0,
+     0.0
+    ],
+    [
+     3.0,
+     3.0
+    ],
+    [
+     0.0,
+     3.0
+    ]
+   ],
+   "thickness": 0.1,
+   "material": "_plaster_white"
+  },
+  {
+   "id": "room/wall0/end",
+   "node": "room",
+   "role": "wall",
+   "matrix": [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    1.5,
+    0.0,
+    -0.06,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     -0.12,
+     0.0,
+     -0.12
+    ],
+    [
+     3.12,
+     2.6,
+     0.0
+    ]
+   ],
+   "type": "shape",
+   "shape": "box",
+   "size": [
+    3.24,
+    2.6,
+    0.12
+   ],
+   "material": "_plaster_white",
+   "facing": [
+    0.0,
+    -1.0
+   ]
+  },
+  {
+   "id": "room/wall1/end",
+   "node": "room",
+   "role": "wall",
+   "matrix": [
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    -1.0,
+    0.0,
+    0.0,
+    0.0,
+    3.06,
+    0.0,
+    1.5,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     3.0,
+     0.0,
+     -0.12
+    ],
+    [
+     3.12,
+     2.6,
+     3.12
+    ]
+   ],
+   "type": "shape",
+   "shape": "box",
+   "size": [
+    3.24,
+    2.6,
+    0.12
+   ],
+   "material": "_plaster_white",
+   "facing": [
+    1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "room/wall2/end",
+   "node": "room",
+   "role": "wall",
+   "matrix": [
+    -1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -1.0,
+    0.0,
+    1.5,
+    0.0,
+    3.06,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     -0.12,
+     0.0,
+     3.0
+    ],
+    [
+     3.12,
+     2.6,
+     3.12
+    ]
+   ],
+   "type": "shape",
+   "shape": "box",
+   "size": [
+    3.24,
+    2.6,
+    0.12
+   ],
+   "material": "_plaster_white",
+   "facing": [
+    0.0,
+    1.0
+   ]
+  },
+  {
+   "id": "room/wall3/end",
+   "node": "room",
+   "role": "wall",
+   "matrix": [
+    0.0,
+    0.0,
+    -1.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    -0.06,
+    0.0,
+    1.5,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     -0.12,
+     0.0,
+     -0.12
+    ],
+    [
+     0.0,
+     2.6,
+     3.12
+    ]
+   ],
+   "type": "shape",
+   "shape": "box",
+   "size": [
+    3.24,
+    2.6,
+    0.12
+   ],
+   "material": "_plaster_white",
+   "facing": [
+    -1.0,
+    0.0
+   ]
+  },
+  {
+   "id": "crate_1",
+   "node": "crate_1",
+   "role": "asset",
+   "matrix": [
+    0.965926,
+    0.0,
+    -0.258819,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.258819,
+    0.0,
+    0.965926,
+    0.0,
+    1.5,
+    0.0,
+    1.5,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     1.1938,
+     0.0,
+     1.1938
+    ],
+    [
+     1.8062,
+     0.4,
+     1.8062
+    ]
+   ],
+   "type": "asset",
+   "asset": "crate",
+   "materials": {}
+  }
+ ],
+ "bounds": [
+  [
+   -0.12,
+   -0.1,
+   -0.12
+  ],
+  [
+   3.12,
+   2.7,
+   3.12
+  ]
+ ],
+ "unsupported": [],
+ "extras": {}
+}

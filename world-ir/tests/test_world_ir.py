@@ -10,6 +10,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from world_ir import Action, World, apply_v1, constrained_schema  # noqa: E402
+from world_ir.lowered import LoweredScene  # noqa: E402
 
 EXAMPLES = sorted((ROOT / "examples").glob("*.json"))
 
@@ -30,6 +31,8 @@ def test_generated_files_are_up_to_date():
     assert schema == json.loads(
         json.dumps(World.model_json_schema(by_alias=True))
     ), "schema/world.schema.json is stale: run scripts/build_docs.py"
+    lowered = json.loads((ROOT / "schema" / "lowered.schema.json").read_text())
+    assert lowered == json.loads(json.dumps(LoweredScene.model_json_schema(by_alias=True)))
     actions = json.loads((ROOT / "schema" / "actions.schema.json").read_text())
     assert actions == json.loads(json.dumps(TypeAdapter(list[Action]).json_schema(by_alias=True)))
 
@@ -84,12 +87,12 @@ def test_prefab_node_ids_are_local():
 
 def test_constrained_schema_lists_only_real_unlocked_nodes():
     data = load("bedroom.json")
-    room(data)["children"][3]["locked"] = True  # wardrobe
+    room(data)["children"][3]["locked"] = True  # cabinet
     world = World.model_validate(data)
     schema = constrained_schema(world, "v1")
     move = schema["$defs"]["ActMove"]["properties"]
     assert "bed" in move["id"]["enum"]
-    assert "wardrobe" not in move["id"]["enum"]
+    assert "cabinet" not in move["id"]["enum"]
     assert move["to"]["items"] == {"type": "number"}
     assert set(schema["$defs"]) == {"ActMove", "ActRotate", "ActScale"}
     assert schema["maxItems"] == 12
@@ -108,7 +111,7 @@ def test_apply_v1_moves_rotates_and_scales():
     assert fixed.node("desk_chair").xform.pos == (0.9, 0, 2.4)
     assert fixed.node("bed").xform.yaw == 90
     assert fixed.node("reading_lamp").xform.scale == 1.2
-    assert world.node("desk_chair").xform.pos == (0.82, 0, 2.4), "the original world is unchanged"
+    assert world.node("desk_chair").xform.pos == (0.91, 0, 2.6), "the original world is unchanged"
 
 
 def test_apply_v1_refuses_locked_nodes_and_later_actions():

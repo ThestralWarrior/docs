@@ -1,0 +1,1981 @@
+{
+  "$defs": {
+    "Ambient": {
+      "additionalProperties": false,
+      "description": "Light that reaches everything equally, or from sky and ground (hemisphere).",
+      "properties": {
+        "type": {
+          "default": "hemisphere",
+          "enum": [
+            "ambient",
+            "hemisphere"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "color": {
+          "default": "#ffffff",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "ground_color": {
+          "default": "#6b6157",
+          "description": "Hemisphere only: colour from below.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Ground Color",
+          "type": "string"
+        },
+        "intensity": {
+          "default": 0.6,
+          "minimum": 0,
+          "title": "Intensity",
+          "type": "number"
+        }
+      },
+      "title": "Ambient",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "Environment": {
+      "additionalProperties": false,
+      "description": "World-wide visual and physical settings.",
+      "properties": {
+        "sky": {
+          "discriminator": {
+            "mapping": {
+              "color": "#/$defs/SkyColor",
+              "gradient": "#/$defs/SkyGradient",
+              "hdri": "#/$defs/SkyHdri",
+              "procedural": "#/$defs/SkyProcedural"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/SkyColor"
+            },
+            {
+              "$ref": "#/$defs/SkyGradient"
+            },
+            {
+              "$ref": "#/$defs/SkyProcedural"
+            },
+            {
+              "$ref": "#/$defs/SkyHdri"
+            }
+          ],
+          "title": "Sky"
+        },
+        "sun": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Sun"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Leave empty for windowless interiors."
+        },
+        "ambient": {
+          "$ref": "#/$defs/Ambient"
+        },
+        "fog": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "exp2": "#/$defs/FogExp2",
+                  "linear": "#/$defs/FogLinear"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/FogLinear"
+                },
+                {
+                  "$ref": "#/$defs/FogExp2"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fog"
+        },
+        "time_of_day": {
+          "anyOf": [
+            {
+              "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "'HH:MM'. When set, tools may derive the sun position from it.",
+          "title": "Time Of Day"
+        },
+        "tone_mapping": {
+          "default": "aces",
+          "enum": [
+            "none",
+            "linear",
+            "reinhard",
+            "cineon",
+            "aces",
+            "agx",
+            "neutral"
+          ],
+          "title": "Tone Mapping",
+          "type": "string"
+        },
+        "exposure": {
+          "default": 1.0,
+          "exclusiveMinimum": 0,
+          "title": "Exposure",
+          "type": "number"
+        },
+        "gravity_m_s2": {
+          "default": -9.81,
+          "title": "Gravity M S2",
+          "type": "number"
+        },
+        "weather": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Weather"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "x-tier": "later"
+        },
+        "wind": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Wind"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "x-tier": "later"
+        }
+      },
+      "title": "Environment",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "FogExp2": {
+      "additionalProperties": false,
+      "description": "Exponential fog, closer to real haze.",
+      "properties": {
+        "type": {
+          "const": "exp2",
+          "default": "exp2",
+          "title": "Type",
+          "type": "string"
+        },
+        "color": {
+          "default": "#dfe9f2",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "density": {
+          "default": 0.015,
+          "exclusiveMinimum": 0,
+          "title": "Density",
+          "type": "number"
+        }
+      },
+      "title": "FogExp2",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "FogLinear": {
+      "additionalProperties": false,
+      "description": "Fog that thickens linearly between two distances.",
+      "properties": {
+        "type": {
+          "const": "linear",
+          "default": "linear",
+          "title": "Type",
+          "type": "string"
+        },
+        "color": {
+          "default": "#dfe9f2",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "near": {
+          "default": 10.0,
+          "minimum": 0,
+          "title": "Near",
+          "type": "number"
+        },
+        "far": {
+          "default": 80.0,
+          "exclusiveMinimum": 0,
+          "title": "Far",
+          "type": "number"
+        }
+      },
+      "title": "FogLinear",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "LAsset": {
+      "additionalProperties": false,
+      "description": "What the loader needs to place a GLB: where it is, its size in metres, and which way it faces.",
+      "properties": {
+        "uri": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Uri"
+        },
+        "dims": {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Dims",
+          "type": "array"
+        },
+        "front": {
+          "default": "+z",
+          "enum": [
+            "+z",
+            "-z",
+            "+x",
+            "-x"
+          ],
+          "title": "Front",
+          "type": "string"
+        }
+      },
+      "required": [
+        "uri",
+        "dims"
+      ],
+      "title": "LAsset",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "LAssetItem": {
+      "additionalProperties": false,
+      "description": "A GLB, normalised by the loader to bottom-centre origin, +Z front and the asset's dims.",
+      "properties": {
+        "id": {
+          "description": "Unique in the scene. Single-item nodes use the node ID; parts add '/part'.",
+          "title": "Id",
+          "type": "string"
+        },
+        "node": {
+          "description": "ID of the IR node this came from.",
+          "title": "Node",
+          "type": "string"
+        },
+        "role": {
+          "description": "What it is, e.g. 'asset', 'wall', 'floor', 'step', 'door', 'window'.",
+          "title": "Role",
+          "type": "string"
+        },
+        "matrix": {
+          "description": "4\u00d74 world matrix, column-major (the order of Three.js Matrix4.elements).",
+          "maxItems": 16,
+          "minItems": 16,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Matrix",
+          "type": "array"
+        },
+        "visible": {
+          "default": true,
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "aabb": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                },
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "World-space [min, max], for framing and quick checks.",
+          "title": "Aabb"
+        },
+        "type": {
+          "const": "asset",
+          "default": "asset",
+          "title": "Type",
+          "type": "string"
+        },
+        "asset": {
+          "title": "Asset",
+          "type": "string"
+        },
+        "materials": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Mesh material slot to lowered material ID.",
+          "title": "Materials",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "node",
+        "role",
+        "matrix",
+        "asset"
+      ],
+      "title": "LAssetItem",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "LCamera": {
+      "additionalProperties": false,
+      "description": "A viewpoint.",
+      "properties": {
+        "id": {
+          "description": "Unique in the scene. Single-item nodes use the node ID; parts add '/part'.",
+          "title": "Id",
+          "type": "string"
+        },
+        "node": {
+          "description": "ID of the IR node this came from.",
+          "title": "Node",
+          "type": "string"
+        },
+        "role": {
+          "description": "What it is, e.g. 'asset', 'wall', 'floor', 'step', 'door', 'window'.",
+          "title": "Role",
+          "type": "string"
+        },
+        "matrix": {
+          "description": "4\u00d74 world matrix, column-major (the order of Three.js Matrix4.elements).",
+          "maxItems": 16,
+          "minItems": 16,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Matrix",
+          "type": "array"
+        },
+        "visible": {
+          "default": true,
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "aabb": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                },
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "World-space [min, max], for framing and quick checks.",
+          "title": "Aabb"
+        },
+        "type": {
+          "const": "camera",
+          "default": "camera",
+          "title": "Type",
+          "type": "string"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "projection": {
+          "enum": [
+            "perspective",
+            "orthographic"
+          ],
+          "title": "Projection",
+          "type": "string"
+        },
+        "fov_deg": {
+          "title": "Fov Deg",
+          "type": "number"
+        },
+        "near": {
+          "title": "Near",
+          "type": "number"
+        },
+        "far": {
+          "title": "Far",
+          "type": "number"
+        },
+        "ortho_height": {
+          "title": "Ortho Height",
+          "type": "number"
+        },
+        "look_at": {
+          "anyOf": [
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "World point it looks at.",
+          "title": "Look At"
+        }
+      },
+      "required": [
+        "id",
+        "node",
+        "role",
+        "matrix",
+        "purpose",
+        "projection",
+        "fov_deg",
+        "near",
+        "far",
+        "ortho_height"
+      ],
+      "title": "LCamera",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "LLight": {
+      "additionalProperties": false,
+      "description": "A light, with colour already worked out from kelvin.",
+      "properties": {
+        "id": {
+          "description": "Unique in the scene. Single-item nodes use the node ID; parts add '/part'.",
+          "title": "Id",
+          "type": "string"
+        },
+        "node": {
+          "description": "ID of the IR node this came from.",
+          "title": "Node",
+          "type": "string"
+        },
+        "role": {
+          "description": "What it is, e.g. 'asset', 'wall', 'floor', 'step', 'door', 'window'.",
+          "title": "Role",
+          "type": "string"
+        },
+        "matrix": {
+          "description": "4\u00d74 world matrix, column-major (the order of Three.js Matrix4.elements).",
+          "maxItems": 16,
+          "minItems": 16,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Matrix",
+          "type": "array"
+        },
+        "visible": {
+          "default": true,
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "aabb": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                },
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "World-space [min, max], for framing and quick checks.",
+          "title": "Aabb"
+        },
+        "type": {
+          "const": "light",
+          "default": "light",
+          "title": "Type",
+          "type": "string"
+        },
+        "light": {
+          "enum": [
+            "point",
+            "spot",
+            "area",
+            "directional"
+          ],
+          "title": "Light",
+          "type": "string"
+        },
+        "color": {
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "intensity": {
+          "description": "Candela (point, spot), nits (area), lux (directional): Three.js physical units.",
+          "title": "Intensity",
+          "type": "number"
+        },
+        "range": {
+          "title": "Range",
+          "type": "number"
+        },
+        "angle_deg": {
+          "title": "Angle Deg",
+          "type": "number"
+        },
+        "penumbra": {
+          "title": "Penumbra",
+          "type": "number"
+        },
+        "size": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Size",
+          "type": "array"
+        },
+        "cast_shadows": {
+          "title": "Cast Shadows",
+          "type": "boolean"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "World point it aims at.",
+          "title": "Target"
+        }
+      },
+      "required": [
+        "id",
+        "node",
+        "role",
+        "matrix",
+        "light",
+        "color",
+        "intensity",
+        "range",
+        "angle_deg",
+        "penumbra",
+        "size",
+        "cast_shadows"
+      ],
+      "title": "LLight",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "LMaterial": {
+      "additionalProperties": false,
+      "description": "A material with presets already applied.",
+      "properties": {
+        "base_color": {
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Base Color",
+          "type": "string"
+        },
+        "metallic": {
+          "title": "Metallic",
+          "type": "number"
+        },
+        "roughness": {
+          "title": "Roughness",
+          "type": "number"
+        },
+        "emissive": {
+          "anyOf": [
+            {
+              "description": "sRGB hex colour, #rrggbb.",
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Emissive"
+        },
+        "emissive_intensity": {
+          "default": 0.0,
+          "title": "Emissive Intensity",
+          "type": "number"
+        },
+        "opacity": {
+          "default": 1.0,
+          "title": "Opacity",
+          "type": "number"
+        },
+        "transmission": {
+          "default": 0.0,
+          "title": "Transmission",
+          "type": "number"
+        },
+        "ior": {
+          "default": 1.5,
+          "title": "Ior",
+          "type": "number"
+        },
+        "double_sided": {
+          "default": false,
+          "title": "Double Sided",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "base_color",
+        "metallic",
+        "roughness"
+      ],
+      "title": "LMaterial",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "LShape": {
+      "additionalProperties": false,
+      "description": "A simple shape. Its origin is the centre of its bottom face, like assets.",
+      "properties": {
+        "id": {
+          "description": "Unique in the scene. Single-item nodes use the node ID; parts add '/part'.",
+          "title": "Id",
+          "type": "string"
+        },
+        "node": {
+          "description": "ID of the IR node this came from.",
+          "title": "Node",
+          "type": "string"
+        },
+        "role": {
+          "description": "What it is, e.g. 'asset', 'wall', 'floor', 'step', 'door', 'window'.",
+          "title": "Role",
+          "type": "string"
+        },
+        "matrix": {
+          "description": "4\u00d74 world matrix, column-major (the order of Three.js Matrix4.elements).",
+          "maxItems": 16,
+          "minItems": 16,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Matrix",
+          "type": "array"
+        },
+        "visible": {
+          "default": true,
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "aabb": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                },
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "World-space [min, max], for framing and quick checks.",
+          "title": "Aabb"
+        },
+        "type": {
+          "const": "shape",
+          "default": "shape",
+          "title": "Type",
+          "type": "string"
+        },
+        "shape": {
+          "enum": [
+            "box",
+            "sphere",
+            "cylinder",
+            "cone",
+            "capsule",
+            "plane",
+            "torus",
+            "wedge"
+          ],
+          "title": "Shape",
+          "type": "string"
+        },
+        "size": {
+          "maxItems": 3,
+          "minItems": 3,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Size",
+          "type": "array"
+        },
+        "material": {
+          "title": "Material",
+          "type": "string"
+        },
+        "facing": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Walls, doors and windows: outward normal in world [x, z], so the loader can cut away near walls.",
+          "title": "Facing"
+        }
+      },
+      "required": [
+        "id",
+        "node",
+        "role",
+        "matrix",
+        "shape",
+        "size",
+        "material"
+      ],
+      "title": "LShape",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "LSlab": {
+      "additionalProperties": false,
+      "description": "A flat polygon with thickness: floors and ceilings. Its top face is at local y = 0.",
+      "properties": {
+        "id": {
+          "description": "Unique in the scene. Single-item nodes use the node ID; parts add '/part'.",
+          "title": "Id",
+          "type": "string"
+        },
+        "node": {
+          "description": "ID of the IR node this came from.",
+          "title": "Node",
+          "type": "string"
+        },
+        "role": {
+          "description": "What it is, e.g. 'asset', 'wall', 'floor', 'step', 'door', 'window'.",
+          "title": "Role",
+          "type": "string"
+        },
+        "matrix": {
+          "description": "4\u00d74 world matrix, column-major (the order of Three.js Matrix4.elements).",
+          "maxItems": 16,
+          "minItems": 16,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Matrix",
+          "type": "array"
+        },
+        "visible": {
+          "default": true,
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "aabb": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                },
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "World-space [min, max], for framing and quick checks.",
+          "title": "Aabb"
+        },
+        "type": {
+          "const": "slab",
+          "default": "slab",
+          "title": "Type",
+          "type": "string"
+        },
+        "polygon": {
+          "description": "Outline in local [x, z].",
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Polygon",
+          "type": "array"
+        },
+        "thickness": {
+          "title": "Thickness",
+          "type": "number"
+        },
+        "material": {
+          "title": "Material",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "node",
+        "role",
+        "matrix",
+        "polygon",
+        "thickness",
+        "material"
+      ],
+      "title": "LSlab",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "LZone": {
+      "additionalProperties": false,
+      "description": "An area that must stay clear, or that has a purpose. Drawn only in debug view.",
+      "properties": {
+        "id": {
+          "description": "Unique in the scene. Single-item nodes use the node ID; parts add '/part'.",
+          "title": "Id",
+          "type": "string"
+        },
+        "node": {
+          "description": "ID of the IR node this came from.",
+          "title": "Node",
+          "type": "string"
+        },
+        "role": {
+          "description": "What it is, e.g. 'asset', 'wall', 'floor', 'step', 'door', 'window'.",
+          "title": "Role",
+          "type": "string"
+        },
+        "matrix": {
+          "description": "4\u00d74 world matrix, column-major (the order of Three.js Matrix4.elements).",
+          "maxItems": 16,
+          "minItems": 16,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Matrix",
+          "type": "array"
+        },
+        "visible": {
+          "default": true,
+          "title": "Visible",
+          "type": "boolean"
+        },
+        "aabb": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                },
+                {
+                  "maxItems": 3,
+                  "minItems": 3,
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "World-space [min, max], for framing and quick checks.",
+          "title": "Aabb"
+        },
+        "type": {
+          "const": "zone",
+          "default": "zone",
+          "title": "Type",
+          "type": "string"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "polygon": {
+          "description": "World [x, z] outline.",
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "title": "Polygon",
+          "type": "array"
+        },
+        "y_range": {
+          "description": "World bottom and top.",
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Y Range",
+          "type": "array"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        }
+      },
+      "required": [
+        "id",
+        "node",
+        "role",
+        "matrix",
+        "purpose",
+        "polygon",
+        "y_range"
+      ],
+      "title": "LZone",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "SkyColor": {
+      "additionalProperties": false,
+      "description": "A flat background colour.",
+      "properties": {
+        "type": {
+          "const": "color",
+          "default": "color",
+          "title": "Type",
+          "type": "string"
+        },
+        "color": {
+          "default": "#bcd3e6",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Color",
+          "type": "string"
+        }
+      },
+      "title": "SkyColor",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "SkyGradient": {
+      "additionalProperties": false,
+      "description": "A vertical gradient from horizon to zenith.",
+      "properties": {
+        "type": {
+          "const": "gradient",
+          "default": "gradient",
+          "title": "Type",
+          "type": "string"
+        },
+        "zenith": {
+          "default": "#6a9bd1",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Zenith",
+          "type": "string"
+        },
+        "horizon": {
+          "default": "#dfe9f2",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Horizon",
+          "type": "string"
+        },
+        "ground": {
+          "default": "#8a8478",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Ground",
+          "type": "string"
+        }
+      },
+      "title": "SkyGradient",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "SkyHdri": {
+      "additionalProperties": false,
+      "description": "An equirectangular HDR image used for background and lighting.",
+      "properties": {
+        "type": {
+          "const": "hdri",
+          "default": "hdri",
+          "title": "Type",
+          "type": "string"
+        },
+        "uri": {
+          "description": "Path or URL of an .hdr or .exr file, e.g. from Poly Haven.",
+          "title": "Uri",
+          "type": "string"
+        },
+        "rotation_deg": {
+          "default": 0.0,
+          "title": "Rotation Deg",
+          "type": "number"
+        },
+        "intensity": {
+          "default": 1.0,
+          "minimum": 0,
+          "title": "Intensity",
+          "type": "number"
+        },
+        "use_as_background": {
+          "default": true,
+          "title": "Use As Background",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "uri"
+      ],
+      "title": "SkyHdri",
+      "type": "object",
+      "x-tier": "v2"
+    },
+    "SkyProcedural": {
+      "additionalProperties": false,
+      "description": "A physical sky model (Three.js Sky). The sun position comes from ``sun``.",
+      "properties": {
+        "type": {
+          "const": "procedural",
+          "default": "procedural",
+          "title": "Type",
+          "type": "string"
+        },
+        "turbidity": {
+          "default": 10.0,
+          "description": "Haze. Clear sky about 2, hazy 10+.",
+          "minimum": 0,
+          "title": "Turbidity",
+          "type": "number"
+        },
+        "rayleigh": {
+          "default": 2.0,
+          "description": "Blue scattering strength.",
+          "minimum": 0,
+          "title": "Rayleigh",
+          "type": "number"
+        },
+        "mie_coefficient": {
+          "default": 0.005,
+          "minimum": 0,
+          "title": "Mie Coefficient",
+          "type": "number"
+        },
+        "mie_directional_g": {
+          "default": 0.8,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Mie Directional G",
+          "type": "number"
+        }
+      },
+      "title": "SkyProcedural",
+      "type": "object",
+      "x-tier": "v2"
+    },
+    "Sun": {
+      "additionalProperties": false,
+      "description": "The main directional light for exteriors.",
+      "properties": {
+        "elevation_deg": {
+          "default": 45.0,
+          "description": "Angle above the horizon.",
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Elevation Deg",
+          "type": "number"
+        },
+        "azimuth_deg": {
+          "default": 135.0,
+          "description": "Compass direction the sun shines from; 0 is +Z, 90 is +X.",
+          "title": "Azimuth Deg",
+          "type": "number"
+        },
+        "color": {
+          "anyOf": [
+            {
+              "description": "sRGB hex colour, #rrggbb.",
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Overrides kelvin.",
+          "title": "Color"
+        },
+        "kelvin": {
+          "default": 5600.0,
+          "maximum": 20000,
+          "minimum": 1000,
+          "title": "Kelvin",
+          "type": "number"
+        },
+        "intensity_lux": {
+          "default": 3.0,
+          "description": "Renderer units; about 3 reads as daylight.",
+          "minimum": 0,
+          "title": "Intensity Lux",
+          "type": "number"
+        },
+        "cast_shadows": {
+          "default": true,
+          "title": "Cast Shadows",
+          "type": "boolean"
+        },
+        "shadow_map_size": {
+          "default": 2048,
+          "enum": [
+            512,
+            1024,
+            2048,
+            4096
+          ],
+          "title": "Shadow Map Size",
+          "type": "integer"
+        }
+      },
+      "title": "Sun",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "Unsupported": {
+      "additionalProperties": false,
+      "description": "A node this lowering version skipped. Its children are still lowered.",
+      "properties": {
+        "node": {
+          "title": "Node",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "node",
+        "kind",
+        "reason"
+      ],
+      "title": "Unsupported",
+      "type": "object",
+      "x-tier": "v1"
+    },
+    "Weather": {
+      "additionalProperties": false,
+      "description": "Precipitation and atmosphere effects.",
+      "properties": {
+        "kind": {
+          "default": "clear",
+          "enum": [
+            "clear",
+            "rain",
+            "snow",
+            "fog",
+            "storm",
+            "dust"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "intensity": {
+          "default": 0.5,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Intensity",
+          "type": "number"
+        }
+      },
+      "title": "Weather",
+      "type": "object",
+      "x-tier": "later"
+    },
+    "Wind": {
+      "additionalProperties": false,
+      "description": "Wind used by vegetation sway and particles.",
+      "properties": {
+        "direction_deg": {
+          "default": 0.0,
+          "title": "Direction Deg",
+          "type": "number"
+        },
+        "speed_m_s": {
+          "default": 2.0,
+          "minimum": 0,
+          "title": "Speed M S",
+          "type": "number"
+        },
+        "gustiness": {
+          "default": 0.2,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Gustiness",
+          "type": "number"
+        }
+      },
+      "title": "Wind",
+      "type": "object",
+      "x-tier": "later"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Everything the loader and the validators need, in world space.",
+  "properties": {
+    "format": {
+      "const": "lowered-1",
+      "default": "lowered-1",
+      "title": "Format",
+      "type": "string"
+    },
+    "world_id": {
+      "title": "World Id",
+      "type": "string"
+    },
+    "versions": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "ir, lowering and three versions, for reproducible renders.",
+      "title": "Versions",
+      "type": "object"
+    },
+    "environment": {
+      "$ref": "#/$defs/Environment"
+    },
+    "materials": {
+      "additionalProperties": {
+        "$ref": "#/$defs/LMaterial"
+      },
+      "title": "Materials",
+      "type": "object"
+    },
+    "assets": {
+      "additionalProperties": {
+        "$ref": "#/$defs/LAsset"
+      },
+      "title": "Assets",
+      "type": "object"
+    },
+    "items": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "asset": "#/$defs/LAssetItem",
+            "camera": "#/$defs/LCamera",
+            "light": "#/$defs/LLight",
+            "shape": "#/$defs/LShape",
+            "slab": "#/$defs/LSlab",
+            "zone": "#/$defs/LZone"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/LAssetItem"
+          },
+          {
+            "$ref": "#/$defs/LShape"
+          },
+          {
+            "$ref": "#/$defs/LSlab"
+          },
+          {
+            "$ref": "#/$defs/LLight"
+          },
+          {
+            "$ref": "#/$defs/LCamera"
+          },
+          {
+            "$ref": "#/$defs/LZone"
+          }
+        ]
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "bounds": {
+      "anyOf": [
+        {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "maxItems": 3,
+              "minItems": 3,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            }
+          ],
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "World [min, max] of all geometry.",
+      "title": "Bounds"
+    },
+    "unsupported": {
+      "items": {
+        "$ref": "#/$defs/Unsupported"
+      },
+      "title": "Unsupported",
+      "type": "array"
+    },
+    "extras": {
+      "additionalProperties": true,
+      "title": "Extras",
+      "type": "object"
+    }
+  },
+  "required": [
+    "world_id",
+    "versions",
+    "environment",
+    "materials",
+    "assets",
+    "items"
+  ],
+  "title": "LoweredScene",
+  "type": "object",
+  "x-tier": "v1"
+}

@@ -9,7 +9,7 @@ from typing import Any, Optional
 from pydantic import BaseModel
 from pydantic_core import PydanticUndefined
 
-from . import architecture, assets, common, environment, terrain, world
+from . import architecture, assets, common, environment, lowered, terrain, world
 from .actions import ACTIONS_BY_TIER
 from .generators import GENERATOR_GROUPS
 from .nodes import NODE_KINDS, NodeBase, NodePatch, ScatterItem, WallOverride
@@ -287,6 +287,31 @@ def build() -> dict[str, Any]:
                     {"title": group, "models": [describe(m, exclude=rel_base) for m in models]}
                     for group, models in RELATION_GROUPS.items()
                 ],
+            },
+            {
+                "id": "lowered",
+                "title": "Lowered scene",
+                "intro": (
+                    "What lowering produces from a world file, and what both the validators and the Three.js "
+                    "loader read. Everything is flattened into simple items with world-space matrices; each item "
+                    "keeps the ID of the IR node it came from."
+                ),
+                "models": [
+                    describe(lowered.LoweredScene),
+                    describe(lowered.ItemBase),
+                ]
+                + [
+                    describe(m, exclude=set(lowered.ItemBase.model_fields))
+                    for m in (
+                        lowered.LAssetItem,
+                        lowered.LShape,
+                        lowered.LSlab,
+                        lowered.LLight,
+                        lowered.LCamera,
+                        lowered.LZone,
+                    )
+                ]
+                + [describe(m) for m in (lowered.LAsset, lowered.LMaterial, lowered.Unsupported)],
             },
             {
                 "id": "actions",

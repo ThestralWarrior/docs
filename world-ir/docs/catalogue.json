@@ -8342,6 +8342,719 @@
       ]
     },
     {
+      "id": "lowered",
+      "title": "Lowered scene",
+      "intro": "What lowering produces from a world file, and what both the validators and the Three.js loader read. Everything is flattened into simple items with world-space matrices; each item keeps the ID of the IR node it came from.",
+      "models": [
+        {
+          "name": "LoweredScene",
+          "tag": null,
+          "tier": "v1",
+          "summary": "Everything the loader and the validators need, in world space.",
+          "fields": [
+            {
+              "name": "format",
+              "type": "\"lowered-1\"",
+              "limits": "",
+              "default": "\"lowered-1\"",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "world_id",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "versions",
+              "type": "map[string → string]",
+              "limits": "",
+              "default": "required",
+              "description": "ir, lowering and three versions, for reproducible renders.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "environment",
+              "type": "Environment",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "materials",
+              "type": "map[string → LMaterial]",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "assets",
+              "type": "map[string → LAsset]",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "items",
+              "type": "list[one of several kinds]",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "bounds",
+              "type": "[[number × 3] × 2] (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "World [min, max] of all geometry.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "unsupported",
+              "type": "list[Unsupported]",
+              "limits": "",
+              "default": "auto",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "extras",
+              "type": "object",
+              "limits": "",
+              "default": "auto",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "ItemBase",
+          "tag": null,
+          "tier": "v1",
+          "summary": "Fields every lowered item has.",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "Unique in the scene. Single-item nodes use the node ID; parts add '/part'.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "node",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "ID of the IR node this came from.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "role",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "What it is, e.g. 'asset', 'wall', 'floor', 'step', 'door', 'window'.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "matrix",
+              "type": "[number × 16]",
+              "limits": "",
+              "default": "required",
+              "description": "4×4 world matrix, column-major (the order of Three.js Matrix4.elements).",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "visible",
+              "type": "boolean",
+              "limits": "",
+              "default": "true",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "aabb",
+              "type": "[[number × 3] × 2] (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "World-space [min, max], for framing and quick checks.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LAssetItem",
+          "tag": {
+            "field": "type",
+            "value": "asset"
+          },
+          "tier": "v1",
+          "summary": "A GLB, normalised by the loader to bottom-centre origin, +Z front and the asset's dims.",
+          "fields": [
+            {
+              "name": "asset",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "materials",
+              "type": "map[string → string]",
+              "limits": "",
+              "default": "auto",
+              "description": "Mesh material slot to lowered material ID.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LShape",
+          "tag": {
+            "field": "type",
+            "value": "shape"
+          },
+          "tier": "v1",
+          "summary": "A simple shape. Its origin is the centre of its bottom face, like assets.",
+          "fields": [
+            {
+              "name": "shape",
+              "type": "\"box\" | \"sphere\" | \"cylinder\" | \"cone\" | \"capsule\" | \"plane\" | \"torus\" | \"wedge\"",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "size",
+              "type": "[number × 3]",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "facing",
+              "type": "[number × 2] (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "Walls, doors and windows: outward normal in world [x, z], so the loader can cut away near walls.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LSlab",
+          "tag": {
+            "field": "type",
+            "value": "slab"
+          },
+          "tier": "v1",
+          "summary": "A flat polygon with thickness: floors and ceilings. Its top face is at local y = 0.",
+          "fields": [
+            {
+              "name": "polygon",
+              "type": "list[[number × 2]]",
+              "limits": "",
+              "default": "required",
+              "description": "Outline in local [x, z].",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "thickness",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "material",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LLight",
+          "tag": {
+            "field": "type",
+            "value": "light"
+          },
+          "tier": "v1",
+          "summary": "A light, with colour already worked out from kelvin.",
+          "fields": [
+            {
+              "name": "light",
+              "type": "\"point\" | \"spot\" | \"area\" | \"directional\"",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "color",
+              "type": "colour",
+              "limits": "",
+              "default": "required",
+              "description": "sRGB hex colour, #rrggbb.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "intensity",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "Candela (point, spot), nits (area), lux (directional): Three.js physical units.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "range",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "angle_deg",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "penumbra",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "size",
+              "type": "[number × 2]",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "cast_shadows",
+              "type": "boolean",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "target",
+              "type": "[number × 3] (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "World point it aims at.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LCamera",
+          "tag": {
+            "field": "type",
+            "value": "camera"
+          },
+          "tier": "v1",
+          "summary": "A viewpoint.",
+          "fields": [
+            {
+              "name": "purpose",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "projection",
+              "type": "\"perspective\" | \"orthographic\"",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "fov_deg",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "near",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "far",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "ortho_height",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "look_at",
+              "type": "[number × 3] (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "World point it looks at.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LZone",
+          "tag": {
+            "field": "type",
+            "value": "zone"
+          },
+          "tier": "v1",
+          "summary": "An area that must stay clear, or that has a purpose. Drawn only in debug view.",
+          "fields": [
+            {
+              "name": "purpose",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "polygon",
+              "type": "list[[number × 2]]",
+              "limits": "",
+              "default": "required",
+              "description": "World [x, z] outline.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "y_range",
+              "type": "[number × 2]",
+              "limits": "",
+              "default": "required",
+              "description": "World bottom and top.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "label",
+              "type": "string (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LAsset",
+          "tag": null,
+          "tier": "v1",
+          "summary": "What the loader needs to place a GLB: where it is, its size in metres, and which way it faces.",
+          "fields": [
+            {
+              "name": "uri",
+              "type": "string (optional)",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "dims",
+              "type": "[number × 3]",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "front",
+              "type": "\"+z\" | \"-z\" | \"+x\" | \"-x\"",
+              "limits": "",
+              "default": "\"+z\"",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LMaterial",
+          "tag": null,
+          "tier": "v1",
+          "summary": "A material with presets already applied.",
+          "fields": [
+            {
+              "name": "base_color",
+              "type": "colour",
+              "limits": "",
+              "default": "required",
+              "description": "sRGB hex colour, #rrggbb.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "metallic",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "roughness",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "emissive",
+              "type": "colour (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "emissive_intensity",
+              "type": "number",
+              "limits": "",
+              "default": "0.0",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "opacity",
+              "type": "number",
+              "limits": "",
+              "default": "1.0",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "transmission",
+              "type": "number",
+              "limits": "",
+              "default": "0.0",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "ior",
+              "type": "number",
+              "limits": "",
+              "default": "1.5",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "double_sided",
+              "type": "boolean",
+              "limits": "",
+              "default": "false",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "Unsupported",
+          "tag": null,
+          "tier": "v1",
+          "summary": "A node this lowering version skipped. Its children are still lowered.",
+          "fields": [
+            {
+              "name": "node",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "reason",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "actions",
       "title": "Repair actions",
       "intro": "What an agent may change. The v1 repair model only moves, rotates and scales.",

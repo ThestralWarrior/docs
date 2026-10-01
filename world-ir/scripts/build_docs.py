@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT))
 from pydantic import TypeAdapter  # noqa: E402
 
 from world_ir import Action, World, catalogue  # noqa: E402
+from world_ir.lowered import LoweredScene  # noqa: E402
 
 
 def write(path: pathlib.Path, text: str) -> None:
@@ -84,6 +85,10 @@ def main() -> None:
     write(
         ROOT / "schema" / "actions.schema.json",
         json.dumps(TypeAdapter(list[Action]).json_schema(by_alias=True), indent=2) + "\n",
+    )
+    write(
+        ROOT / "schema" / "lowered.schema.json",
+        json.dumps(LoweredScene.model_json_schema(by_alias=True), indent=2) + "\n",
     )
     cat = catalogue.build()
     write(ROOT / "docs" / "catalogue.json", json.dumps(cat, indent=2, ensure_ascii=False) + "\n")

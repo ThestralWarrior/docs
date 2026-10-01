@@ -4,6 +4,22 @@ The single source of truth for a generated 3D world. A world file is JSON, but i
 
 The full field-by-field reference is in [`docs/REFERENCE.md`](docs/REFERENCE.md). It is generated from the code, so it always matches the schema.
 
+## The pipeline
+
+```
+Builder agent → World IR (agent writes nodes and relations; code fills asset and material entries)
+             → Lowering (Python, world_ir/lower.py)  → Lowered scene ← validators read this
+             → Loader (JavaScript, viewer/src/loader.js, three.js 0.186.1 pinned) → what you see
+```
+
+The repair model edits the World IR with actions; the result is lowered again and the viewer animates the change.
+
+- **Lowering** turns rooms into a floor, a ceiling, wall pieces cut around doors and windows, door panels, window glass and door clearance zones; turns generators into simple shapes; fills in material presets; and flattens nested transforms into world matrices. Version 1 handles room, asset, primitive, group, light, camera, zone and the rug, straight-stairs, wall-run and array generators. Anything else is listed in `unsupported` and skipped, while its children are still lowered.
+- **The loader** only draws what lowering produced. It normalises each GLB (front to +Z, bottom centre to the origin, fitted to the asset's `dims`), tags every object with its IR node ID, highlights nodes, animates updates between two lowered scenes, and cuts away walls between the camera and the room.
+- **Versions** are pinned and recorded in every lowered scene: IR version, lowering version, and the three.js version. Three.js does not follow semver (r186 removed `PCFSoftShadowMap`, for example), so upgrade only on purpose.
+
+![Bedroom example rendered by the loader](docs/bedroom.png)
+
 ## What a world file can contain
 
 | Part | Count | Examples |
@@ -16,7 +32,7 @@ The full field-by-field reference is in [`docs/REFERENCE.md`](docs/REFERENCE.md)
 | Registries | assets, materials (27 presets), prefabs | |
 | Repair actions | 12 in 3 tiers | move, rotate, scale; set support, reparent, swap asset, set material, set param, add node, remove node; add or remove relation |
 
-In total there are about 150 object types and 685 documented fields.
+In total the world format has 155 object types and 685 documented fields; with the lowered scene format, 166 and 745.
 
 Every object and field carries a tier:
 
@@ -49,8 +65,11 @@ world_ir/        Pydantic models: the schema itself
   world.py         World, Brief, ValidationRules, Prefab, cross-reference checks
   actions.py       repair actions, constrained_schema(), apply_v1()
   catalogue.py     reads the models for the generated docs
+  lowered.py       the lowered scene format
+  lower.py         lowering: World IR → lowered scene
 examples/        minimal.json, bedroom.json, cabin_clearing.json
-schema/          generated JSON Schemas for worlds and actions
+viewer/          three.js loader (src/loader.js), demo page, lowered scenes, Kenney CC0 models
+schema/          generated JSON Schemas for worlds, actions and lowered scenes
 docs/            generated REFERENCE.md and catalogue.json
 tests/           validation, cross-reference and action tests
 ```
@@ -59,8 +78,12 @@ tests/           validation, cross-reference and action tests
 
 ```bash
 pip install -e ".[dev]"
-pytest                          # 22 tests
-python scripts/build_docs.py    # regenerate schema/ and docs/ after changing world_ir/
+pytest                                                    # schema, lowering and action tests
+python scripts/build_docs.py                              # regenerate schema/ and docs/ after changing world_ir/
+python scripts/lower.py examples/*.json --out-dir viewer/scenes   # regenerate the scenes the viewer loads
+python scripts/measure_assets.py viewer/assets/kenney/furniture --scale 1.9   # asset dims from the GLBs (needs trimesh)
+
+cd viewer && npm install && npm run serve                 # then open http://localhost:8000/?scene=bedroom
 ```
 
 ```python

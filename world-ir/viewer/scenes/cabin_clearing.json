@@ -1,0 +1,573 @@
+{
+ "format": "lowered-1",
+ "world_id": "cabin_clearing",
+ "versions": {
+  "ir": "1.0",
+  "lowering": "0.1.0",
+  "three": "0.186.1"
+ },
+ "environment": {
+  "sky": {
+   "type": "procedural",
+   "turbidity": 6.0,
+   "rayleigh": 1.8,
+   "mie_coefficient": 0.005,
+   "mie_directional_g": 0.8
+  },
+  "sun": {
+   "elevation_deg": 18.0,
+   "azimuth_deg": 240.0,
+   "kelvin": 4300.0,
+   "intensity_lux": 2.6,
+   "cast_shadows": true,
+   "shadow_map_size": 2048
+  },
+  "ambient": {
+   "type": "hemisphere",
+   "color": "#ffe9cc",
+   "ground_color": "#4a5a3a",
+   "intensity": 0.5
+  },
+  "fog": {
+   "type": "exp2",
+   "color": "#d9c9b0",
+   "density": 0.012
+  },
+  "time_of_day": "17:40",
+  "tone_mapping": "agx",
+  "exposure": 1.0,
+  "gravity_m_s2": -9.81,
+  "wind": {
+   "direction_deg": 60.0,
+   "speed_m_s": 3.0,
+   "gustiness": 0.2
+  }
+ },
+ "materials": {
+  "grass": {
+   "base_color": "#6f8a3a",
+   "metallic": 0.0,
+   "roughness": 1.0,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false
+  },
+  "dirt": {
+   "base_color": "#7a5c3e",
+   "metallic": 0.0,
+   "roughness": 1.0,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false
+  },
+  "rock": {
+   "base_color": "#6f6a63",
+   "metallic": 0.0,
+   "roughness": 0.95,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false
+  },
+  "logs": {
+   "base_color": "#8a5d3b",
+   "metallic": 0.0,
+   "roughness": 0.8,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false
+  },
+  "shingle": {
+   "base_color": "#4a3a33",
+   "metallic": 0.0,
+   "roughness": 0.9,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false
+  },
+  "_metal_black": {
+   "base_color": "#2a2a2c",
+   "metallic": 1.0,
+   "roughness": 0.5,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false
+  }
+ },
+ "assets": {
+  "pine_tall": {
+   "uri": "assets/kenney/nature/tree_pineTallA.glb",
+   "dims": [
+    2.4,
+    7.5,
+    2.4
+   ],
+   "front": "+z"
+  },
+  "oak": {
+   "uri": "assets/kenney/nature/tree_oak.glb",
+   "dims": [
+    4.0,
+    6.0,
+    4.0
+   ],
+   "front": "+z"
+  },
+  "boulder": {
+   "uri": "assets/kenney/nature/rock_largeA.glb",
+   "dims": [
+    1.6,
+    1.0,
+    1.4
+   ],
+   "front": "+z"
+  },
+  "campfire": {
+   "uri": "assets/kenney/nature/campfire_stones.glb",
+   "dims": [
+    1.2,
+    0.4,
+    1.2
+   ],
+   "front": "+z"
+  },
+  "bench": {
+   "uri": "assets/kenney/nature/log_bench.glb",
+   "dims": [
+    1.6,
+    0.45,
+    0.4
+   ],
+   "front": "+z"
+  },
+  "picnic_table": {
+   "uri": "assets/kenney/nature/table_picnic.glb",
+   "dims": [
+    1.8,
+    0.75,
+    0.8
+   ],
+   "front": "+z"
+  }
+ },
+ "items": [
+  {
+   "id": "campsite",
+   "node": "campsite",
+   "role": "zone",
+   "matrix": [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "visible": true,
+   "type": "zone",
+   "purpose": "activity",
+   "polygon": [
+    [
+     9.0,
+     0.0
+    ],
+    [
+     6.4,
+     6.4
+    ],
+    [
+     0.0,
+     9.0
+    ],
+    [
+     -6.4,
+     6.4
+    ],
+    [
+     -9.0,
+     0.0
+    ],
+    [
+     -6.4,
+     -6.4
+    ],
+    [
+     0.0,
+     -9.0
+    ],
+    [
+     6.4,
+     -6.4
+    ]
+   ],
+   "y_range": [
+    0.0,
+    6.0
+   ],
+   "label": "campsite"
+  },
+  {
+   "id": "porch_steps/step0",
+   "node": "porch_steps",
+   "role": "step",
+   "matrix": [
+    -1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -1.0,
+    0.0,
+    0.0,
+    0.5,
+    2.2,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     -0.7,
+     0.5,
+     2.06
+    ],
+    [
+     0.7,
+     0.667,
+     2.34
+    ]
+   ],
+   "type": "shape",
+   "shape": "box",
+   "size": [
+    1.4,
+    0.167,
+    0.28
+   ],
+   "material": "logs"
+  },
+  {
+   "id": "porch_steps/step1",
+   "node": "porch_steps",
+   "role": "step",
+   "matrix": [
+    -1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -1.0,
+    0.0,
+    0.0,
+    0.5,
+    1.92,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     -0.7,
+     0.5,
+     1.78
+    ],
+    [
+     0.7,
+     0.834,
+     2.06
+    ]
+   ],
+   "type": "shape",
+   "shape": "box",
+   "size": [
+    1.4,
+    0.334,
+    0.28
+   ],
+   "material": "logs"
+  },
+  {
+   "id": "porch_steps/step2",
+   "node": "porch_steps",
+   "role": "step",
+   "matrix": [
+    -1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -1.0,
+    0.0,
+    0.0,
+    0.5,
+    1.64,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     -0.7,
+     0.5,
+     1.5
+    ],
+    [
+     0.7,
+     1.001,
+     1.78
+    ]
+   ],
+   "type": "shape",
+   "shape": "box",
+   "size": [
+    1.4,
+    0.501,
+    0.28
+   ],
+   "material": "logs"
+  },
+  {
+   "id": "fire",
+   "node": "fire",
+   "role": "asset",
+   "matrix": [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    5.0,
+    0.5,
+    5.0,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     4.4,
+     0.5,
+     4.4
+    ],
+    [
+     5.6,
+     0.9,
+     5.6
+    ]
+   ],
+   "type": "asset",
+   "asset": "campfire",
+   "materials": {}
+  },
+  {
+   "id": "fire_glow",
+   "node": "fire_glow",
+   "role": "light",
+   "matrix": [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    5.0,
+    1.1,
+    5.0,
+    1.0
+   ],
+   "visible": true,
+   "type": "light",
+   "light": "point",
+   "color": "#ff8300",
+   "intensity": 80.0,
+   "range": 12.0,
+   "angle_deg": 45.0,
+   "penumbra": 0.3,
+   "size": [
+    1.0,
+    0.5
+   ],
+   "cast_shadows": true
+  },
+  {
+   "id": "fire_bench",
+   "node": "fire_bench",
+   "role": "asset",
+   "matrix": [
+    -1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -1.0,
+    0.0,
+    5.0,
+    0.5,
+    7.0,
+    1.0
+   ],
+   "visible": true,
+   "aabb": [
+    [
+     4.2,
+     0.5,
+     6.8
+    ],
+    [
+     5.8,
+     0.95,
+     7.2
+    ]
+   ],
+   "type": "asset",
+   "asset": "bench",
+   "materials": {}
+  },
+  {
+   "id": "hero_cam",
+   "node": "hero_cam",
+   "role": "camera",
+   "matrix": [
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    0.0,
+    14.0,
+    4.0,
+    16.0,
+    1.0
+   ],
+   "visible": true,
+   "type": "camera",
+   "purpose": "hero",
+   "projection": "perspective",
+   "fov_deg": 55.0,
+   "near": 0.05,
+   "far": 500.0,
+   "ortho_height": 10.0,
+   "look_at": [
+    0.0,
+    1.0,
+    -2.5
+   ]
+  }
+ ],
+ "bounds": [
+  [
+   -0.7,
+   0.5,
+   1.5
+  ],
+  [
+   5.8,
+   1.001,
+   7.2
+  ]
+ ],
+ "unsupported": [
+  {
+   "node": "ground",
+   "kind": "terrain",
+   "reason": "not lowered in this version"
+  },
+  {
+   "node": "trail",
+   "kind": "path",
+   "reason": "not lowered in this version"
+  },
+  {
+   "node": "deck",
+   "kind": "generator:platform",
+   "reason": "not lowered in this version"
+  },
+  {
+   "node": "cabin",
+   "kind": "generator:building",
+   "reason": "not lowered in this version"
+  },
+  {
+   "node": "fire_flames",
+   "kind": "particles",
+   "reason": "not lowered in this version"
+  },
+  {
+   "node": "picnic_1",
+   "kind": "prefab",
+   "reason": "not lowered in this version"
+  },
+  {
+   "node": "old_oak",
+   "kind": "generator:tree",
+   "reason": "not lowered in this version"
+  },
+  {
+   "node": "forest",
+   "kind": "scatter",
+   "reason": "not lowered in this version"
+  },
+  {
+   "node": "visitor_start",
+   "kind": "marker",
+   "reason": "not lowered in this version"
+  }
+ ],
+ "extras": {}
+}

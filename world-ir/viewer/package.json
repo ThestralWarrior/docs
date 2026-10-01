@@ -1,0 +1,12 @@
+{
+  "name": "world-viewer",
+  "private": true,
+  "type": "module",
+  "description": "Three.js loader for lowered world scenes. Three.js is pinned to one exact version.",
+  "scripts": {
+    "serve": "python3 -m http.server 8000"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  }
+}

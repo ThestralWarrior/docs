@@ -1767,6 +1767,147 @@ Declared intent. Validators check them; hard ones are bugs when broken, soft one
 |---|---|---|---|---|
 | `a` | id | required | later | Lowercase slug, unique within the world file. Refers to: node. |
 
+## Lowered scene
+
+What lowering produces from a world file, and what both the validators and the Three.js loader read. Everything is flattened into simple items with world-space matrices; each item keeps the ID of the IR node it came from.
+
+#### LoweredScene
+
+*Tier v1.* Everything the loader and the validators need, in world space.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `format` | "lowered-1" | "lowered-1" | v1 |  |
+| `world_id` | string | required | v1 |  |
+| `versions` | map[string → string] | required | v1 | ir, lowering and three versions, for reproducible renders. |
+| `environment` | Environment | required | v1 |  |
+| `materials` | map[string → LMaterial] | required | v1 |  |
+| `assets` | map[string → LAsset] | required | v1 |  |
+| `items` | list[one of several kinds] | required | v1 |  |
+| `bounds` | [[number × 3] × 2] (optional) | none | v1 | World [min, max] of all geometry. |
+| `unsupported` | list[Unsupported] | auto | v1 |  |
+| `extras` | object | auto | v1 |  |
+
+#### ItemBase
+
+*Tier v1.* Fields every lowered item has.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `id` | string | required | v1 | Unique in the scene. Single-item nodes use the node ID; parts add '/part'. |
+| `node` | string | required | v1 | ID of the IR node this came from. |
+| `role` | string | required | v1 | What it is, e.g. 'asset', 'wall', 'floor', 'step', 'door', 'window'. |
+| `matrix` | [number × 16] | required | v1 | 4×4 world matrix, column-major (the order of Three.js Matrix4.elements). |
+| `visible` | boolean | true | v1 |  |
+| `aabb` | [[number × 3] × 2] (optional) | none | v1 | World-space [min, max], for framing and quick checks. |
+
+#### `type: "asset"` · LAssetItem
+
+*Tier v1.* A GLB, normalised by the loader to bottom-centre origin, +Z front and the asset's dims.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `asset` | string | required | v1 |  |
+| `materials` | map[string → string] | auto | v1 | Mesh material slot to lowered material ID. |
+
+#### `type: "shape"` · LShape
+
+*Tier v1.* A simple shape. Its origin is the centre of its bottom face, like assets.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `shape` | "box" \| "sphere" \| "cylinder" \| "cone" \| "capsule" \| "plane" \| "torus" \| "wedge" | required | v1 |  |
+| `size` | [number × 3] | required | v1 |  |
+| `material` | string | required | v1 |  |
+| `facing` | [number × 2] (optional) | none | v1 | Walls, doors and windows: outward normal in world [x, z], so the loader can cut away near walls. |
+
+#### `type: "slab"` · LSlab
+
+*Tier v1.* A flat polygon with thickness: floors and ceilings. Its top face is at local y = 0.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `polygon` | list[[number × 2]] | required | v1 | Outline in local [x, z]. |
+| `thickness` | number | required | v1 |  |
+| `material` | string | required | v1 |  |
+
+#### `type: "light"` · LLight
+
+*Tier v1.* A light, with colour already worked out from kelvin.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `light` | "point" \| "spot" \| "area" \| "directional" | required | v1 |  |
+| `color` | colour | required | v1 | sRGB hex colour, #rrggbb. |
+| `intensity` | number | required | v1 | Candela (point, spot), nits (area), lux (directional): Three.js physical units. |
+| `range` | number | required | v1 |  |
+| `angle_deg` | number | required | v1 |  |
+| `penumbra` | number | required | v1 |  |
+| `size` | [number × 2] | required | v1 |  |
+| `cast_shadows` | boolean | required | v1 |  |
+| `target` | [number × 3] (optional) | none | v1 | World point it aims at. |
+
+#### `type: "camera"` · LCamera
+
+*Tier v1.* A viewpoint.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `purpose` | string | required | v1 |  |
+| `projection` | "perspective" \| "orthographic" | required | v1 |  |
+| `fov_deg` | number | required | v1 |  |
+| `near` | number | required | v1 |  |
+| `far` | number | required | v1 |  |
+| `ortho_height` | number | required | v1 |  |
+| `look_at` | [number × 3] (optional) | none | v1 | World point it looks at. |
+
+#### `type: "zone"` · LZone
+
+*Tier v1.* An area that must stay clear, or that has a purpose. Drawn only in debug view.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `purpose` | string | required | v1 |  |
+| `polygon` | list[[number × 2]] | required | v1 | World [x, z] outline. |
+| `y_range` | [number × 2] | required | v1 | World bottom and top. |
+| `label` | string (optional) | none | v1 |  |
+
+#### LAsset
+
+*Tier v1.* What the loader needs to place a GLB: where it is, its size in metres, and which way it faces.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `uri` | string (optional) | required | v1 |  |
+| `dims` | [number × 3] | required | v1 |  |
+| `front` | "+z" \| "-z" \| "+x" \| "-x" | "+z" | v1 |  |
+
+#### LMaterial
+
+*Tier v1.* A material with presets already applied.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `base_color` | colour | required | v1 | sRGB hex colour, #rrggbb. |
+| `metallic` | number | required | v1 |  |
+| `roughness` | number | required | v1 |  |
+| `emissive` | colour (optional) | none | v1 |  |
+| `emissive_intensity` | number | 0.0 | v1 |  |
+| `opacity` | number | 1.0 | v1 |  |
+| `transmission` | number | 0.0 | v1 |  |
+| `ior` | number | 1.5 | v1 |  |
+| `double_sided` | boolean | false | v1 |  |
+
+#### Unsupported
+
+*Tier v1.* A node this lowering version skipped. Its children are still lowered.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `node` | string | required | v1 |  |
+| `kind` | string | required | v1 |  |
+| `reason` | string | required | v1 |  |
+
 ## Repair actions
 
 What an agent may change. The v1 repair model only moves, rotates and scales.
