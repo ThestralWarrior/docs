@@ -545,6 +545,16 @@
               "repair": null
             },
             {
+              "name": "max_builder_intents",
+              "type": "integer",
+              "limits": "≥0",
+              "default": "6",
+              "description": "How many nodes the builder may give its own intents; the user's are not counted.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
               "name": "ask_when_unexplained",
               "type": "boolean",
               "limits": "",
@@ -1001,7 +1011,7 @@
           "name": "Intent",
           "tag": null,
           "tier": "v1",
-          "summary": "A deliberate break from what the checks expect, with the words that asked for it.",
+          "summary": "A deliberate break from what the checks expect, and who decided it.",
           "fields": [
             {
               "name": "allows",
@@ -1015,20 +1025,30 @@
             },
             {
               "name": "source",
-              "type": "\"prompt\" | \"user\" | \"image_brief\"",
+              "type": "\"prompt\" | \"user\" | \"image_brief\" | \"builder\"",
               "limits": "",
               "default": "required",
-              "description": "Who asked. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability.",
+              "description": "Who decided. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability.",
               "tier": "v1",
               "ref": null,
               "repair": null
             },
             {
               "name": "quote",
-              "type": "string",
+              "type": "string (optional)",
               "limits": "",
-              "default": "required",
-              "description": "The words that asked for it, copied exactly (case and spacing aside).",
+              "default": "none",
+              "description": "Prompt, user and image intents: the words that asked for it, copied exactly (case and spacing aside).",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "licence",
+              "type": "string (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "Builder intents: the brief's mood, style or archetype that allows it, e.g. 'horror'. See ODDNESS_LICENCES.",
               "tier": "v1",
               "ref": null,
               "repair": null
@@ -1038,7 +1058,7 @@
               "type": "string (optional)",
               "limits": "",
               "default": "none",
-              "description": "",
+              "description": "Why. Required from the builder; shown to the user.",
               "tier": "v1",
               "ref": null,
               "repair": null
@@ -10685,6 +10705,21 @@
       "decorate",
       "play",
       "exercise"
+    ],
+    "oddness_licences": [
+      "horror",
+      "haunted",
+      "creepy",
+      "abandoned",
+      "ruins",
+      "post_apocalyptic",
+      "surreal",
+      "dreamlike",
+      "whimsical",
+      "chaotic",
+      "messy",
+      "cluttered",
+      "zero_gravity"
     ]
   }
 }

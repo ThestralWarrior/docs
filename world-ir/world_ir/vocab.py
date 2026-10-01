@@ -107,3 +107,20 @@ FUNCTIONS: list[str] = [
     "play",
     "exercise",
 ]
+
+ODDNESS_LICENCES: list[str] = [
+    "horror",
+    "haunted",
+    "creepy",
+    "abandoned",
+    "ruins",
+    "post_apocalyptic",
+    "surreal",
+    "dreamlike",
+    "whimsical",
+    "chaotic",
+    "messy",
+    "cluttered",
+    "zero_gravity",
+]
+"""Moods, styles and archetypes that let the builder break the default checks on its own."""

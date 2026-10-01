@@ -4697,7 +4697,7 @@
     },
     "Intent": {
       "additionalProperties": false,
-      "description": "A deliberate break from what the checks expect, with the words that asked for it.\n\nA chair stuck upside down on the ceiling allows 'upright'; its support is still\nchecked against the ceiling, so repairs move it toward what was asked, not back\nto the floor. Applies to the node and everything under it. The quote must appear\nin the prompt, in a later user message, or in an approved reference caption, so a\nbuilder cannot excuse its own mistakes by calling them deliberate.",
+      "description": "A deliberate break from what the checks expect, and who decided it.\n\nA chair stuck upside down on the ceiling allows 'upright'; its support is still\nchecked against the ceiling, so repairs move it toward what was asked, not back\nto the floor. Applies to the node and everything under it.\n\nThe user decides with a quote: from the prompt, a later message, or an approved\nreference caption. The builder may also decide, for style, without being asked:\nit names a licence (a mood, style or archetype the brief really has and that\nallows oddness, such as 'horror' or 'abandoned') and says why. Builder intents\nare capped, never cover the hard checks, and are fixed once checking starts,\nso the builder cannot excuse its own mistakes after seeing them.",
       "properties": {
         "allows": {
           "description": "Checks that do not apply to this node.",
@@ -4721,20 +4721,42 @@
           "type": "array"
         },
         "source": {
-          "description": "Who asked. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability.",
+          "description": "Who decided. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability.",
           "enum": [
             "prompt",
             "user",
-            "image_brief"
+            "image_brief",
+            "builder"
           ],
           "title": "Source",
           "type": "string"
         },
         "quote": {
-          "description": "The words that asked for it, copied exactly (case and spacing aside).",
-          "minLength": 3,
-          "title": "Quote",
-          "type": "string"
+          "anyOf": [
+            {
+              "minLength": 3,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Prompt, user and image intents: the words that asked for it, copied exactly (case and spacing aside).",
+          "title": "Quote"
+        },
+        "licence": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Builder intents: the brief's mood, style or archetype that allows it, e.g. 'horror'. See ODDNESS_LICENCES.",
+          "title": "Licence"
         },
         "note": {
           "anyOf": [
@@ -4746,13 +4768,13 @@
             }
           ],
           "default": null,
+          "description": "Why. Required from the builder; shown to the user.",
           "title": "Note"
         }
       },
       "required": [
         "allows",
-        "source",
-        "quote"
+        "source"
       ],
       "title": "Intent",
       "type": "object",

@@ -14,7 +14,7 @@ from .actions import ACTIONS_BY_TIER
 from .generators import GENERATOR_GROUPS, KitchenModule, SweepSupports, WindowGrid
 from .nodes import NODE_KINDS, NodeBase, NodePatch, ScatterItem, WallOverride
 from .relations import RELATION_GROUPS, RelationBase
-from .vocab import ARCHETYPES, BIOMES, FUNCTIONS, ROOM_TYPES, STYLE_TAGS
+from .vocab import ARCHETYPES, BIOMES, FUNCTIONS, ODDNESS_LICENCES, ROOM_TYPES, STYLE_TAGS
 
 DISCRIMINATORS = ("kind", "gen", "rel", "action", "type", "source", "op")
 UNION_NAMES = {
@@ -344,5 +344,6 @@ def build() -> dict[str, Any]:
             "biomes": BIOMES,
             "style_tags": STYLE_TAGS,
             "functions": FUNCTIONS,
+            "oddness_licences": ODDNESS_LICENCES,
         },
     }

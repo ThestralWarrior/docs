@@ -11,6 +11,7 @@ from .common import PROMPT_WAIVABLE, Color, Id, Intent, IRModel, Provenance, cfg
 from .environment import Environment
 from .nodes import Node, PathNode, RoomNode, ZoneNode
 from .relations import Relation
+from .vocab import ODDNESS_LICENCES
 
 IR_VERSION = "1.0"
 
@@ -93,6 +94,9 @@ class ValidationRules(IRModel):
     )
     deliberate_min_tilt_deg: float = Field(
         15.0, ge=0, le=180, description="Likewise for a waived upright check: small tilts are still flagged."
+    )
+    max_builder_intents: int = Field(
+        6, ge=0, description="How many nodes the builder may give its own intents; the user's are not counted."
     )
     ask_when_unexplained: bool = Field(
         True,
@@ -214,15 +218,28 @@ class World(IRModel):
 
     @model_validator(mode="after")
     def _intent_is_backed(self) -> "World":
-        """Every waiver quotes words the user really gave, and only the user waives the hard checks."""
+        """User intents quote what the user said; builder intents cite a licence the brief really gives."""
         errors: list[str] = []
+        builder_nodes = 0
         for node, _ in self.walk():
+            if any(i.source == "builder" for i in node.intent):
+                builder_nodes += 1
             for intent in node.intent:
                 hard = sorted(set(intent.allows) - PROMPT_WAIVABLE)
                 if hard and intent.source != "user":
                     errors.append(f"'{node.id}': only the user can waive {', '.join(hard)}")
                 if self.brief is None:
-                    errors.append(f"'{node.id}': intent needs a brief to quote")
+                    errors.append(f"'{node.id}': intent needs a brief")
+                    continue
+                if intent.source == "builder":
+                    licence = intent.licence.lower()
+                    given = {t.lower() for t in self.brief.mood + self.brief.style + [self.brief.archetype or ""]}
+                    if licence not in ODDNESS_LICENCES:
+                        errors.append(f"'{node.id}': '{intent.licence}' does not allow oddness; see ODDNESS_LICENCES")
+                    elif licence not in given:
+                        errors.append(
+                            f"'{node.id}': licence '{intent.licence}' is not in the brief's mood, style or archetype"
+                        )
                     continue
                 texts = {
                     "prompt": [self.brief.prompt],
@@ -236,6 +253,10 @@ class World(IRModel):
                         "image_brief": "an approved reference caption",
                     }
                     errors.append(f"'{node.id}': quote '{intent.quote}' is not in {where[intent.source]}")
+        if builder_nodes > self.rules.max_builder_intents:
+            errors.append(
+                f"the builder gave {builder_nodes} nodes their own intents; rules.max_builder_intents is {self.rules.max_builder_intents}"
+            )
         if errors:
             raise ValueError("; ".join(errors))
         return self
@@ -351,3 +372,30 @@ def _iter_tree(node: Any) -> Iterator[Any]:
 def _plain(text: str) -> str:
     """Lowercase words only, so quotes match whatever the case, spacing and punctuation."""
     return " ".join(re.findall(r"[\w']+", text.lower()))
+
+
+def intent_changes(before: "World", after: "World") -> list[str]:
+    """Intents added, changed or removed between two versions of a world, other than the user's.
+
+    The orchestrator freezes intent once checking starts: run this on the world as built
+    and the world after each repair step. Anything it returns is rejected, so no agent
+    can turn a mistake into a deliberate choice after the validators have seen it.
+    """
+
+    def table(world: "World") -> dict[str, list[dict]]:
+        return {
+            node.id: [i.model_dump() for i in node.intent if i.source != "user"]
+            for node, _ in world.walk()
+            if any(i.source != "user" for i in node.intent)
+        }
+
+    old, new = table(before), table(after)
+    changes = []
+    for node_id in sorted(set(old) | set(new)):
+        if node_id not in old:
+            changes.append(f"'{node_id}': intent added")
+        elif node_id not in new:
+            changes.append(f"'{node_id}': intent removed")
+        elif old[node_id] != new[node_id]:
+            changes.append(f"'{node_id}': intent changed")
+    return changes

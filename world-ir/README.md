@@ -46,7 +46,7 @@ The repair model edits the World IR with actions; the result is lowered again an
 | Registries | assets, materials (38 presets), prefabs | wood, metal, glass, terrain, lava, acid, ice, hull, neon |
 | Repair actions | 12 in 3 tiers | move, rotate, scale; set support, reparent, swap asset, set material, set param, add node, remove node; add or remove relation |
 
-In total the world format has 165 object types and 749 documented fields; with the lowered scene format, 180 and 838.
+In total the world format has 165 object types and 751 documented fields; with the lowered scene format, 180 and 840.
 
 Every object and field carries a tier:
 
@@ -70,10 +70,12 @@ Validators never decide what a scene should look like; they check that it matche
 - The quote must appear in the prompt (`source: prompt`), in a later user message (`brief.messages`, `source: user`) or in an approved reference caption (`source: image_brief`). A builder cannot excuse its own mistakes by calling them deliberate.
 - Floating, sunk, upright, overlap, facing and scale can be waived from the prompt. Inside-wall, out-of-bounds, door clearance and reachability can only be waived by the user.
 - Near misses are still mistakes: a waived check keeps flagging gaps under `rules.deliberate_min_offset` (15 cm) and tilts under `rules.deliberate_min_tilt_deg` (15°). Nobody floats a lamp 3 cm on purpose.
+- The builder can make its own design choices too, without being asked. Instead of a quote it names a **licence**: a mood, style or archetype the brief really has and that allows oddness (`horror`, `abandoned`, `surreal`, ... see `ODDNESS_LICENCES`), plus a note saying why, which the user sees. Builder intents are capped (`rules.max_builder_intents`), never cover the hard checks, and are frozen once checking starts: `intent_changes(built, repaired)` lists any intent added, changed or removed after the build, and the orchestrator rejects those steps. So the builder can plan oddness, but cannot excuse a mistake after the validators have found it.
+- How the builder organises a scene is stated as relations with `source: "builder"` (`faces`, `around`, `row`, `symmetric`, `visible_from`, `clear`, ...). Validators check them and repairs must keep them.
 - A waiver covers the node and everything under it. `World.waiver(node_id, check)` returns the intent that applies, or `None`.
 - Large breaks that nothing explains, in a scene whose brief allows oddness, are asked about rather than repaired (`rules.ask_when_unexplained`).
 
-`examples/horror_room.json` uses all of this: a chair on the ceiling, a floating, flickering lamp, a bed shoved against the door and a nightstand the user asked to keep tipped over.
+`examples/horror_room.json` uses all of this: a chair on the ceiling, a floating, flickering lamp, a bed shoved against the door, a nightstand the user asked to keep tipped over, and a box the builder knocked over on its own, licensed by the brief's `horror` mood.
 
 ![Horror room: a chair on the ceiling, a floating lamp, a tipped-over nightstand](docs/horror_room.png)
 

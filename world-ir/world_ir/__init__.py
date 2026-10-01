@@ -11,8 +11,8 @@ from .assets import MATERIAL_PRESETS, AssetDef, Material
 from .generators import GENERATOR_GROUPS, Generator
 from .nodes import NODE_KINDS, Node
 from .relations import RELATION_GROUPS, Relation
-from .vocab import ARCHETYPES, BIOMES, FUNCTIONS, ROOM_TYPES, STYLE_TAGS
-from .world import IR_VERSION, World
+from .vocab import ARCHETYPES, BIOMES, FUNCTIONS, ODDNESS_LICENCES, ROOM_TYPES, STYLE_TAGS
+from .world import IR_VERSION, World, intent_changes
 
 __all__ = [
     "ACTIONS_BY_TIER",
@@ -28,6 +28,7 @@ __all__ = [
     "Material",
     "NODE_KINDS",
     "Node",
+    "ODDNESS_LICENCES",
     "RELATION_GROUPS",
     "ROOM_TYPES",
     "Relation",
@@ -35,4 +36,5 @@ __all__ = [
     "World",
     "apply_v1",
     "constrained_schema",
+    "intent_changes",
 ]

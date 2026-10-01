@@ -240,22 +240,42 @@ PROMPT_WAIVABLE: frozenset[str] = frozenset({"floating", "sunk", "upright", "ove
 
 
 class Intent(IRModel):
-    """A deliberate break from what the checks expect, with the words that asked for it.
+    """A deliberate break from what the checks expect, and who decided it.
 
     A chair stuck upside down on the ceiling allows 'upright'; its support is still
     checked against the ceiling, so repairs move it toward what was asked, not back
-    to the floor. Applies to the node and everything under it. The quote must appear
-    in the prompt, in a later user message, or in an approved reference caption, so a
-    builder cannot excuse its own mistakes by calling them deliberate.
+    to the floor. Applies to the node and everything under it.
+
+    The user decides with a quote: from the prompt, a later message, or an approved
+    reference caption. The builder may also decide, for style, without being asked:
+    it names a licence (a mood, style or archetype the brief really has and that
+    allows oddness, such as 'horror' or 'abandoned') and says why. Builder intents
+    are capped, never cover the hard checks, and are fixed once checking starts,
+    so the builder cannot excuse its own mistakes after seeing them.
     """
 
     model_config = cfg("v1")
 
     allows: list[Check] = Field(min_length=1, description="Checks that do not apply to this node.")
-    source: Literal["prompt", "user", "image_brief"] = Field(
-        description="Who asked. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability."
+    source: Literal["prompt", "user", "image_brief", "builder"] = Field(
+        description="Who decided. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability."
     )
-    quote: str = Field(
-        min_length=3, description="The words that asked for it, copied exactly (case and spacing aside)."
+    quote: Optional[str] = Field(
+        None,
+        min_length=3,
+        description="Prompt, user and image intents: the words that asked for it, copied exactly (case and spacing aside).",
     )
-    note: Optional[str] = None
+    licence: Optional[str] = Field(
+        None,
+        description="Builder intents: the brief's mood, style or archetype that allows it, e.g. 'horror'. See ODDNESS_LICENCES.",
+    )
+    note: Optional[str] = Field(None, description="Why. Required from the builder; shown to the user.")
+
+    @model_validator(mode="after")
+    def _evidence_matches_source(self) -> "Intent":
+        if self.source == "builder":
+            if not self.licence or not self.note:
+                raise ValueError("a builder intent needs a licence and a note saying why")
+        elif not self.quote:
+            raise ValueError(f"a {self.source} intent needs the quote that asked for it")
+        return self

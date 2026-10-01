@@ -141,6 +141,16 @@
       "extras": {
         "kit_scale": 1.9
       }
+    },
+    "box": {
+      "source": "kenney",
+      "uri": "assets/kenney/furniture/cardboardBoxClosed.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)"
+      },
+      "category": "box",
+      "dims": [0.34, 0.45, 0.34]
     }
   },
   "nodes": [
@@ -290,6 +300,26 @@
               "allows": ["upright"],
               "source": "user",
               "quote": "keep the nightstand tipped over on its side"
+            }
+          ]
+        },
+        {
+          "kind": "asset",
+          "id": "fallen_box",
+          "asset": "box",
+          "support": {
+            "on": "floor"
+          },
+          "xform": {
+            "pos": [0.95, 0.17, 2.55],
+            "rot": [0, 35, 90]
+          },
+          "intent": [
+            {
+              "allows": ["upright"],
+              "source": "builder",
+              "licence": "horror",
+              "note": "A box knocked on its side, so the room looks disturbed."
             }
           ]
         },

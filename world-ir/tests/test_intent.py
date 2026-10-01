@@ -11,7 +11,7 @@ from pydantic import ValidationError
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from world_ir import World  # noqa: E402
+from world_ir import World, intent_changes  # noqa: E402
 from world_ir.common import PROMPT_WAIVABLE  # noqa: E402
 
 DATA = json.loads((ROOT / "examples" / "horror_room.json").read_text())
@@ -91,3 +91,67 @@ def test_near_misses_are_still_mistakes():
     rules = World.model_validate(DATA).rules
     assert rules.deliberate_min_offset > rules.float_tolerance
     assert rules.deliberate_min_tilt_deg > 0
+
+
+# Builder intents ---------------------------------------------------------------------
+
+
+def box(data):
+    return next(n for n in data["nodes"][0]["children"] if n["id"] == "fallen_box")
+
+
+def test_builder_may_decide_oddness_the_brief_licenses():
+    world = World.model_validate(DATA)
+    intent = world.waiver("fallen_box", "upright")
+    assert intent.source == "builder" and intent.licence == "horror" and intent.quote is None
+
+
+def test_builder_licence_must_be_in_the_brief(data):
+    data["brief"]["mood"] = ["uneasy"]
+    with pytest.raises(ValidationError, match="not in the brief"):
+        World.model_validate(data)
+
+
+def test_builder_licence_must_allow_oddness(data):
+    data["brief"]["mood"].append("cosy")
+    box(data)["intent"][0]["licence"] = "cosy"
+    with pytest.raises(ValidationError, match="does not allow oddness"):
+        World.model_validate(data)
+
+
+def test_builder_must_say_why(data):
+    del box(data)["intent"][0]["note"]
+    with pytest.raises(ValidationError, match="licence and a note"):
+        World.model_validate(data)
+
+
+def test_builder_cannot_waive_hard_checks(data):
+    box(data)["intent"][0]["allows"] = ["door_clearance"]
+    with pytest.raises(ValidationError, match="only the user can waive door_clearance"):
+        World.model_validate(data)
+
+
+def test_builder_intents_are_capped(data):
+    data.setdefault("rules", {})["max_builder_intents"] = 0
+    with pytest.raises(ValidationError, match="max_builder_intents"):
+        World.model_validate(data)
+
+
+def test_intent_is_frozen_once_checking_starts(data):
+    built = World.model_validate(data)
+    # A repair step that moves things is fine.
+    moved = copy.deepcopy(data)
+    box(moved)["xform"]["pos"] = [1.1, 0.17, 2.4]
+    assert intent_changes(built, World.model_validate(moved)) == []
+    # Excusing the bed after the validators saw it is not.
+    excused = copy.deepcopy(data)
+    bed = next(n for n in excused["nodes"][0]["children"] if n["id"] == "bed")
+    bed["intent"].append(
+        {"allows": ["upright"], "source": "builder", "licence": "horror", "note": "crooked on purpose"}
+    )
+    assert intent_changes(built, World.model_validate(excused)) == ["'bed': intent changed"]
+    # The user can still add intent at any time.
+    asked = copy.deepcopy(data)
+    asked["brief"]["messages"].append("leave the desk chair where it is")
+    chair(asked)["intent"].append({"allows": ["facing"], "source": "user", "quote": "leave the desk chair where it is"})
+    assert intent_changes(built, World.model_validate(asked)) == []

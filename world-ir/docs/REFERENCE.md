@@ -103,6 +103,7 @@ The top level of a world file and the objects it holds directly.
 | `walkway_width` | number | 0.6 | v1 | (>0) |
 | `deliberate_min_offset` | number | 0.15 | v1 | A waived floating or sunk check still flags gaps smaller than this: near misses are mistakes, not art. (≥0) |
 | `deliberate_min_tilt_deg` | number | 15.0 | v1 | Likewise for a waived upright check: small tilts are still flagged. (≥0 ≤180) |
+| `max_builder_intents` | integer | 6 | v1 | How many nodes the builder may give its own intents; the user's are not counted. (≥0) |
 | `ask_when_unexplained` | boolean | true | v1 | Large unexplained breaks in a scene whose brief allows oddness are asked about, not repaired. |
 | `scale_ratio` | [number × 2] | (0.5, 2.0) | v1 | Allowed multiple of the typical category size. |
 | `max_walkable_slope_deg` | number | 35.0 | v1 | (>0 ≤90) |
@@ -204,14 +205,15 @@ Small objects used by many nodes.
 
 #### Intent
 
-*Tier v1.* A deliberate break from what the checks expect, with the words that asked for it.
+*Tier v1.* A deliberate break from what the checks expect, and who decided it.
 
 | Field | Type | Default | Tier | Description |
 |---|---|---|---|---|
 | `allows` | list["floating" \| "sunk" \| "upright" \| "overlap" \| "inside_wall" \| "facing" \| "scale" \| "out_of_bounds" \| "door_clearance" \| "reachability", ≥1] | required | v1 | Checks that do not apply to this node. |
-| `source` | "prompt" \| "user" \| "image_brief" | required | v1 | Who asked. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability. |
-| `quote` | string | required | v1 | The words that asked for it, copied exactly (case and spacing aside). |
-| `note` | string (optional) | none | v1 |  |
+| `source` | "prompt" \| "user" \| "image_brief" \| "builder" | required | v1 | Who decided. Only 'user' may waive inside_wall, out_of_bounds, door_clearance and reachability. |
+| `quote` | string (optional) | none | v1 | Prompt, user and image intents: the words that asked for it, copied exactly (case and spacing aside). |
+| `licence` | string (optional) | none | v1 | Builder intents: the brief's mood, style or archetype that allows it, e.g. 'horror'. See ODDNESS_LICENCES. |
+| `note` | string (optional) | none | v1 | Why. Required from the builder; shown to the user. |
 
 #### Opening
 
@@ -2238,3 +2240,4 @@ Suggested values. Fields that use them accept other strings too.
 - **biomes**: temperate_forest, conifer_forest, grassland, desert, tundra, alpine, tropical, wetland, coastal, urban, lunar, volcanic, alien
 - **style_tags**: low_poly, stylised, realistic, scandinavian, industrial, mid_century, rustic, japanese, victorian, minimalist, cottage, brutalist, medieval, sci_fi, post_apocalyptic
 - **functions**: sleep, sit, work, eat, cook, store, display, wash, light, decorate, play, exercise
+- **oddness_licences**: horror, haunted, creepy, abandoned, ruins, post_apocalyptic, surreal, dreamlike, whimsical, chaotic, messy, cluttered, zero_gravity
