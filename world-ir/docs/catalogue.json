@@ -922,7 +922,7 @@
         {
           "name": "Behavior",
           "tag": null,
-          "tier": "later",
+          "tier": "v2",
           "summary": "A preset behaviour with parameters. Never free-form code.",
           "fields": [
             {
@@ -931,7 +931,7 @@
               "limits": "",
               "default": "required",
               "description": "",
-              "tier": "later",
+              "tier": "v2",
               "ref": null,
               "repair": null
             },
@@ -941,7 +941,7 @@
               "limits": "",
               "default": "auto",
               "description": "Preset parameters, e.g. {'speed_deg_s': 30} for spin.",
-              "tier": "later",
+              "tier": "v2",
               "ref": null,
               "repair": null
             },
@@ -951,7 +951,7 @@
               "limits": "",
               "default": "none",
               "description": "For follow_path: the path node.",
-              "tier": "later",
+              "tier": "v2",
               "ref": "path",
               "repair": null
             }
@@ -1178,7 +1178,7 @@
           "fields": [
             {
               "name": "sky",
-              "type": "SkyColor | SkyGradient | SkyProcedural | SkyHdri",
+              "type": "one of several kinds",
               "limits": "",
               "default": "auto",
               "description": "",
@@ -1243,6 +1243,36 @@
               "default": "1.0",
               "description": "",
               "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "reflections",
+              "type": "\"none\" | \"studio\"",
+              "limits": "",
+              "default": "\"none\"",
+              "description": "Image-based light for reflections. Without it, fully metallic materials look nearly black.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "reflection_intensity",
+              "type": "number",
+              "limits": "≥0",
+              "default": "1.0",
+              "description": "",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "post",
+              "type": "PostEffects (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v2",
               "ref": null,
               "repair": null
             },
@@ -1443,6 +1473,233 @@
           ]
         },
         {
+          "name": "SkySpace",
+          "tag": {
+            "field": "type",
+            "value": "space"
+          },
+          "tier": "v2",
+          "summary": "A night or airless sky: a dark gradient, a starfield and distant planets and moons.",
+          "fields": [
+            {
+              "name": "zenith",
+              "type": "colour",
+              "limits": "",
+              "default": "\"#04050c\"",
+              "description": "sRGB hex colour, #rrggbb.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "horizon",
+              "type": "colour",
+              "limits": "",
+              "default": "\"#1d1830\"",
+              "description": "sRGB hex colour, #rrggbb.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "stars",
+              "type": "integer",
+              "limits": "≥0 ≤50000",
+              "default": "4000",
+              "description": "Number of stars.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "star_brightness",
+              "type": "number",
+              "limits": "≥0 ≤4",
+              "default": "1.0",
+              "description": "",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "milky_way",
+              "type": "[number × 2] (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "[azimuth_deg, tilt_deg] of a dense band of stars across the sky, or empty for none.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "bodies",
+              "type": "list[CelestialBody]",
+              "limits": "",
+              "default": "auto",
+              "description": "",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "CelestialBody",
+          "tag": null,
+          "tier": "v2",
+          "summary": "A planet, moon or star drawn far away on the sky. Lit by the sun, so it shows a phase.",
+          "fields": [
+            {
+              "name": "name",
+              "type": "string (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "azimuth_deg",
+              "type": "number",
+              "limits": "",
+              "default": "required",
+              "description": "Compass direction; 0 is +Z, 90 is +X, like the sun.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "elevation_deg",
+              "type": "number",
+              "limits": "≥-10 ≤90",
+              "default": "required",
+              "description": "Angle above the horizon.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "angular_size_deg",
+              "type": "number",
+              "limits": ">0 ≤90",
+              "default": "8.0",
+              "description": "Apparent diameter. The real Moon is about 0.5.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "style",
+              "type": "\"rocky\" | \"gas\" | \"ice\" | \"star\"",
+              "limits": "",
+              "default": "\"rocky\"",
+              "description": "'star' glows instead of being lit.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "color",
+              "type": "colour",
+              "limits": "",
+              "default": "\"#b9b2a7\"",
+              "description": "sRGB hex colour, #rrggbb.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "band_color",
+              "type": "colour (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "Gas giants: colour of the alternating bands.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "ring",
+              "type": "PlanetRing (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "glow",
+              "type": "number",
+              "limits": "≥0",
+              "default": "0.0",
+              "description": "Emissive strength; above about 1 it blooms.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "PlanetRing",
+          "tag": null,
+          "tier": "v2",
+          "summary": "A flat ring around a celestial body, sized relative to the body's radius.",
+          "fields": [
+            {
+              "name": "inner",
+              "type": "number",
+              "limits": ">1",
+              "default": "1.4",
+              "description": "Inner edge, in body radii.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "outer",
+              "type": "number",
+              "limits": ">1",
+              "default": "2.3",
+              "description": "Outer edge, in body radii.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "tilt_deg",
+              "type": "number",
+              "limits": "≥-90 ≤90",
+              "default": "20.0",
+              "description": "Tilt of the ring plane from edge-on.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "color",
+              "type": "colour",
+              "limits": "",
+              "default": "\"#d8c7a6\"",
+              "description": "sRGB hex colour, #rrggbb.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "opacity",
+              "type": "number",
+              "limits": "≥0 ≤1",
+              "default": "0.75",
+              "description": "",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
           "name": "Sun",
           "tag": null,
           "tier": "v1",
@@ -1635,6 +1892,62 @@
               "default": "0.015",
               "description": "",
               "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "PostEffects",
+          "tag": null,
+          "tier": "v2",
+          "summary": "Screen effects applied after rendering.",
+          "fields": [
+            {
+              "name": "bloom",
+              "type": "Bloom (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "Bloom",
+          "tag": null,
+          "tier": "v2",
+          "summary": "Glow around bright pixels: emissive materials, lamps, lava, stars.",
+          "fields": [
+            {
+              "name": "strength",
+              "type": "number",
+              "limits": "≥0 ≤3",
+              "default": "0.8",
+              "description": "",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "radius",
+              "type": "number",
+              "limits": "≥0 ≤1",
+              "default": "0.4",
+              "description": "How far the glow spreads.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "threshold",
+              "type": "number",
+              "limits": "≥0",
+              "default": "0.9",
+              "description": "Brightness above which pixels glow, before tone mapping.",
+              "tier": "v2",
               "ref": null,
               "repair": null
             }
@@ -2473,6 +2786,64 @@
         "bark": {
           "base_color": "#5a4632",
           "roughness": 1.0
+        },
+        "regolith": {
+          "base_color": "#8a7d70",
+          "roughness": 1.0
+        },
+        "regolith_dark": {
+          "base_color": "#4f4650",
+          "roughness": 1.0
+        },
+        "ice": {
+          "base_color": "#cfe6f2",
+          "roughness": 0.15,
+          "transmission": 0.3
+        },
+        "lava": {
+          "base_color": "#1a0602",
+          "roughness": 0.9,
+          "emissive": "#ff4510",
+          "emissive_intensity": 1.6
+        },
+        "acid": {
+          "base_color": "#2f4a0c",
+          "roughness": 0.2,
+          "emissive": "#8cff2a",
+          "emissive_intensity": 1.2
+        },
+        "hull_white": {
+          "base_color": "#d9dde2",
+          "metallic": 0.2,
+          "roughness": 0.45
+        },
+        "hull_grey": {
+          "base_color": "#6d747c",
+          "metallic": 0.3,
+          "roughness": 0.5
+        },
+        "glass_tinted": {
+          "base_color": "#9fd8e6",
+          "roughness": 0.25,
+          "transmission": 0.85
+        },
+        "neon_cyan": {
+          "base_color": "#0a1a1f",
+          "emissive": "#38f2ff",
+          "emissive_intensity": 2.5,
+          "roughness": 0.4
+        },
+        "neon_magenta": {
+          "base_color": "#1f0a1a",
+          "emissive": "#ff3ad2",
+          "emissive_intensity": 2.5,
+          "roughness": 0.4
+        },
+        "neon_amber": {
+          "base_color": "#1f150a",
+          "emissive": "#ffb238",
+          "emissive_intensity": 2.5,
+          "roughness": 0.4
         }
       }
     },
@@ -2582,8 +2953,8 @@
               "type": "list[Behavior]",
               "limits": "",
               "default": "auto",
-              "description": "",
-              "tier": "later",
+              "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
+              "tier": "v2",
               "ref": null,
               "repair": null
             },
@@ -2971,6 +3342,16 @@
               "description": "Fills everything below this height with water.",
               "tier": "v2",
               "ref": null,
+              "repair": null
+            },
+            {
+              "name": "water_material",
+              "type": "id (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "What fills it: water by default, or e.g. the 'lava' or 'acid' preset.",
+              "tier": "v2",
+              "ref": "material",
               "repair": null
             },
             {
@@ -3897,6 +4278,16 @@
               "tier": "v2",
               "ref": null,
               "repair": null
+            },
+            {
+              "name": "materials",
+              "type": "list[MaterialSlotOverride]",
+              "limits": "",
+              "default": "auto",
+              "description": "Material overrides for every copy, as on asset nodes.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
             }
           ]
         }
@@ -4350,7 +4741,7 @@
             "field": "op",
             "value": "crater"
           },
-          "tier": "later",
+          "tier": "v2",
           "summary": "A bowl with a raised rim.",
           "fields": [
             {
@@ -4359,7 +4750,7 @@
               "limits": "",
               "default": "required",
               "description": "",
-              "tier": "later",
+              "tier": "v2",
               "ref": null,
               "repair": null
             },
@@ -4369,7 +4760,7 @@
               "limits": ">0",
               "default": "required",
               "description": "",
-              "tier": "later",
+              "tier": "v2",
               "ref": null,
               "repair": null
             },
@@ -4379,7 +4770,7 @@
               "limits": ">0",
               "default": "required",
               "description": "",
-              "tier": "later",
+              "tier": "v2",
               "ref": null,
               "repair": null
             },
@@ -4389,7 +4780,7 @@
               "limits": "≥0",
               "default": "0.5",
               "description": "",
-              "tier": "later",
+              "tier": "v2",
               "ref": null,
               "repair": null
             }
@@ -5272,6 +5663,16 @@
                 },
                 {
                   "name": "trim_material",
+                  "type": "id (optional)",
+                  "limits": "",
+                  "default": "none",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": "material",
+                  "repair": null
+                },
+                {
+                  "name": "floor_material",
                   "type": "id (optional)",
                   "limits": "",
                   "default": "none",
@@ -6435,6 +6836,296 @@
                   "description": "",
                   "tier": "v2",
                   "ref": null,
+                  "repair": null
+                }
+              ]
+            },
+            {
+              "name": "GenSweep",
+              "tag": {
+                "field": "gen",
+                "value": "sweep"
+              },
+              "tier": "v2",
+              "summary": "A cross-section swept along a line: pipes, cables, rails, monorail beams, neon tubes, conduits.",
+              "fields": [
+                {
+                  "name": "path",
+                  "type": "id (optional)",
+                  "limits": "",
+                  "default": "none",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": "path",
+                  "repair": null
+                },
+                {
+                  "name": "points",
+                  "type": "list[[number × 3]] (optional)",
+                  "limits": "",
+                  "default": "none",
+                  "description": "[x, y, z] points, used when no path is given.",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "closed",
+                  "type": "boolean",
+                  "limits": "",
+                  "default": "false",
+                  "description": "Points only: join the end back to the start.",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "smooth",
+                  "type": "boolean",
+                  "limits": "",
+                  "default": "true",
+                  "description": "Points only: curve through the points.",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "profile",
+                  "type": "\"circle\" | \"rect\"",
+                  "limits": "",
+                  "default": "\"circle\"",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "radius",
+                  "type": "number",
+                  "limits": ">0",
+                  "default": "0.15",
+                  "description": "Circle profile radius.",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "size",
+                  "type": "[number × 2]",
+                  "limits": "",
+                  "default": "(0.4, 0.3)",
+                  "description": "Rect profile [width, height].",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "segments",
+                  "type": "integer",
+                  "limits": "≥3 ≤64",
+                  "default": "12",
+                  "description": "Facets around a circle profile.",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "elevation",
+                  "type": "number",
+                  "limits": "",
+                  "default": "0.0",
+                  "description": "Height of the line above the ground or above its points.",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "offset",
+                  "type": "number",
+                  "limits": "",
+                  "default": "0.0",
+                  "description": "Sideways shift from the line; positive is to the right of travel.",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "conform_to_terrain",
+                  "type": "boolean (optional)",
+                  "limits": "",
+                  "default": "none",
+                  "description": "Follow the ground. Empty means: as the path does, or no for points.",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "supports",
+                  "type": "SweepSupports (optional)",
+                  "limits": "",
+                  "default": "none",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "material",
+                  "type": "id (optional)",
+                  "limits": "",
+                  "default": "none",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": "material",
+                  "repair": null
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Parts used by generators",
+          "models": [
+            {
+              "name": "WindowGrid",
+              "tag": null,
+              "tier": "v2",
+              "summary": "Regular windows on a building's facades.",
+              "fields": [
+                {
+                  "name": "per_floor",
+                  "type": "integer",
+                  "limits": "≥0",
+                  "default": "3",
+                  "description": "Windows per long facade per floor.",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "width",
+                  "type": "number",
+                  "limits": ">0",
+                  "default": "1.0",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "height",
+                  "type": "number",
+                  "limits": ">0",
+                  "default": "1.3",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "sill",
+                  "type": "number",
+                  "limits": "≥0",
+                  "default": "0.9",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "asset",
+                  "type": "id (optional)",
+                  "limits": "",
+                  "default": "none",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": "asset",
+                  "repair": null
+                }
+              ]
+            },
+            {
+              "name": "KitchenModule",
+              "tag": null,
+              "tier": "v2",
+              "summary": "One unit in a kitchen run.",
+              "fields": [
+                {
+                  "name": "type",
+                  "type": "\"base\" | \"drawers\" | \"sink\" | \"stove\" | \"oven\" | \"dishwasher\" | \"fridge\" | \"tall\" | \"gap\" | \"corner\"",
+                  "limits": "",
+                  "default": "required",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "width",
+                  "type": "number",
+                  "limits": ">0",
+                  "default": "0.6",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                }
+              ]
+            },
+            {
+              "name": "SweepSupports",
+              "tag": null,
+              "tier": "v2",
+              "summary": "Posts under a sweep, from its underside down to the ground.",
+              "fields": [
+                {
+                  "name": "spacing",
+                  "type": "number",
+                  "limits": ">0.5",
+                  "default": "6.0",
+                  "description": "Distance between posts along the line.",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "shape",
+                  "type": "\"box\" | \"cylinder\"",
+                  "limits": "",
+                  "default": "\"cylinder\"",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "width",
+                  "type": "number",
+                  "limits": ">0",
+                  "default": "0.3",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": null,
+                  "repair": null
+                },
+                {
+                  "name": "asset",
+                  "type": "id (optional)",
+                  "limits": "",
+                  "default": "none",
+                  "description": "Place this asset on the ground instead of a post; it is not stretched.",
+                  "tier": "v2",
+                  "ref": "asset",
+                  "repair": null
+                },
+                {
+                  "name": "material",
+                  "type": "id (optional)",
+                  "limits": "",
+                  "default": "none",
+                  "description": "",
+                  "tier": "v2",
+                  "ref": "material",
                   "repair": null
                 }
               ]
@@ -8433,6 +9124,16 @@
               "repair": null
             },
             {
+              "name": "behaviors",
+              "type": "list[LBehavior]",
+              "limits": "",
+              "default": "auto",
+              "description": "",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
               "name": "unsupported",
               "type": "list[Unsupported]",
               "limits": "",
@@ -8812,6 +9513,16 @@
               "limits": "",
               "default": "none",
               "description": "Asset to copy; or give shape, size and material.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "materials",
+              "type": "map[string → string]",
+              "limits": "",
+              "default": "auto",
+              "description": "Asset copies: slot to lowered material ID.",
               "tier": "v1",
               "ref": null,
               "repair": null
@@ -9242,6 +9953,84 @@
               "default": "false",
               "description": "",
               "tier": "v1",
+              "ref": null,
+              "repair": null
+            }
+          ]
+        },
+        {
+          "name": "LBehavior",
+          "tag": null,
+          "tier": "v2",
+          "summary": "An animation the loader plays on a set of items. Item matrices stay the rest pose.",
+          "fields": [
+            {
+              "name": "node",
+              "type": "string",
+              "limits": "",
+              "default": "required",
+              "description": "The IR node that has the behaviour.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "preset",
+              "type": "\"spin\" | \"bob\" | \"sway\" | \"flicker\" | \"follow_path\"",
+              "limits": "",
+              "default": "required",
+              "description": "",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "items",
+              "type": "list[string]",
+              "limits": "",
+              "default": "required",
+              "description": "Items it moves: everything lowered from the node and its children.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "origin",
+              "type": "[number × 16]",
+              "limits": "",
+              "default": "required",
+              "description": "The node's world matrix: the pivot and axes for spin, bob and sway.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "params",
+              "type": "map[string → number | string | boolean]",
+              "limits": "",
+              "default": "auto",
+              "description": "",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "path",
+              "type": "list[[number × 3]] (optional)",
+              "limits": "",
+              "default": "none",
+              "description": "follow_path: world points the node's origin travels through.",
+              "tier": "v2",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "closed",
+              "type": "boolean",
+              "limits": "",
+              "default": "false",
+              "description": "",
+              "tier": "v2",
               "ref": null,
               "repair": null
             }
@@ -9748,7 +10537,9 @@
         "plaza",
         "campsite",
         "ruins",
-        "harbour"
+        "harbour",
+        "space_colony",
+        "spaceport"
       ]
     },
     "biomes": [
@@ -9761,7 +10552,10 @@
       "tropical",
       "wetland",
       "coastal",
-      "urban"
+      "urban",
+      "lunar",
+      "volcanic",
+      "alien"
     ],
     "style_tags": [
       "low_poly",

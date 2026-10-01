@@ -47,7 +47,11 @@ class NodeBase(IRModel):
     visible: bool = True
     locked: bool = Field(False, description="The repair model may not change this node.")
     physics: Optional[Physics] = Field(None, json_schema_extra=tiered("v2"))
-    behaviors: list[Behavior] = Field(default_factory=list, json_schema_extra=tiered("later"))
+    behaviors: list[Behavior] = Field(
+        default_factory=list,
+        description="Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
+        json_schema_extra=tiered("v2"),
+    )
     source: Optional[Provenance] = None
     children: list["Node"] = Field(default_factory=list)
     extras: dict[str, Any] = Field(default_factory=dict, description="Free-form data tools may attach.")
@@ -185,6 +189,11 @@ class TerrainNode(NodeBase):
     modifiers: list[TerrainModifier] = Field(default_factory=list, description="Applied in order.")
     layers: list[TerrainLayer] = Field(default_factory=list, description="Painted in order.")
     water_level: Optional[float] = Field(None, description="Fills everything below this height with water.")
+    water_material: Optional[Id] = Field(
+        None,
+        description="What fills it: water by default, or e.g. the 'lava' or 'acid' preset.",
+        json_schema_extra=ref("material"),
+    )
     holes: list[Polygon2] = Field(default_factory=list, description="Areas with no ground, e.g. cave mouths.")
     collider: bool = True
 
@@ -228,6 +237,9 @@ class ScatterItem(IRModel):
     weight: float = Field(1.0, gt=0, description="Relative share among the scatter's items.")
     scale: Vec2 = Field((0.8, 1.2), description="Random uniform scale range.")
     yaw: Vec2 = Field((0.0, 360.0), description="Random yaw range in degrees.")
+    materials: list[MaterialSlotOverride] = Field(
+        default_factory=list, description="Material overrides for every copy, as on asset nodes."
+    )
 
 
 class ScatterNode(NodeBase):

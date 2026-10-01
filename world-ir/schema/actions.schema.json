@@ -748,12 +748,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -988,12 +989,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -1142,7 +1144,7 @@
     },
     "Behavior": {
       "additionalProperties": false,
-      "description": "A preset behaviour with parameters. Never free-form code.",
+      "description": "A preset behaviour with parameters. Never free-form code.\n\nThe viewer plays spin (speed_deg_s, axis), bob (amplitude_m, period_s, phase),\nsway (angle_deg, period_s, axis), flicker (amount, speed; lights only) and\nfollow_path (speed_m_s, offset_m, height_m). The rest are not played yet.\nA behaviour moves the node and everything under it.",
       "properties": {
         "preset": {
           "enum": [
@@ -1198,7 +1200,7 @@
       ],
       "title": "Behavior",
       "type": "object",
-      "x-tier": "later"
+      "x-tier": "v2"
     },
     "CameraNode": {
       "additionalProperties": false,
@@ -1280,12 +1282,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -1594,12 +1597,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -2180,6 +2184,21 @@
           ],
           "default": null,
           "title": "Trim Material",
+          "x-ref": "material"
+        },
+        "floor_material": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Floor Material",
           "x-ref": "material"
         },
         "interior": {
@@ -3546,6 +3565,171 @@
       "type": "object",
       "x-tier": "v1"
     },
+    "GenSweep": {
+      "additionalProperties": false,
+      "description": "A cross-section swept along a line: pipes, cables, rails, monorail beams, neon tubes, conduits.\n\nThe line runs through the centre of the profile. Give a path node or points in the\nnode's own space. With conform_to_terrain the line keeps `elevation` metres above\nthe ground; otherwise it keeps the line's own heights plus `elevation`.",
+      "properties": {
+        "gen": {
+          "const": "sweep",
+          "default": "sweep",
+          "title": "Gen",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path",
+          "x-ref": "path"
+        },
+        "points": {
+          "anyOf": [
+            {
+              "items": {
+                "maxItems": 3,
+                "minItems": 3,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "[x, y, z] points, used when no path is given.",
+          "title": "Points"
+        },
+        "closed": {
+          "default": false,
+          "description": "Points only: join the end back to the start.",
+          "title": "Closed",
+          "type": "boolean"
+        },
+        "smooth": {
+          "default": true,
+          "description": "Points only: curve through the points.",
+          "title": "Smooth",
+          "type": "boolean"
+        },
+        "profile": {
+          "default": "circle",
+          "enum": [
+            "circle",
+            "rect"
+          ],
+          "title": "Profile",
+          "type": "string"
+        },
+        "radius": {
+          "default": 0.15,
+          "description": "Circle profile radius.",
+          "exclusiveMinimum": 0,
+          "title": "Radius",
+          "type": "number"
+        },
+        "size": {
+          "default": [
+            0.4,
+            0.3
+          ],
+          "description": "Rect profile [width, height].",
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Size",
+          "type": "array"
+        },
+        "segments": {
+          "default": 12,
+          "description": "Facets around a circle profile.",
+          "maximum": 64,
+          "minimum": 3,
+          "title": "Segments",
+          "type": "integer"
+        },
+        "elevation": {
+          "default": 0.0,
+          "description": "Height of the line above the ground or above its points.",
+          "title": "Elevation",
+          "type": "number"
+        },
+        "offset": {
+          "default": 0.0,
+          "description": "Sideways shift from the line; positive is to the right of travel.",
+          "title": "Offset",
+          "type": "number"
+        },
+        "conform_to_terrain": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Follow the ground. Empty means: as the path does, or no for points.",
+          "title": "Conform To Terrain"
+        },
+        "supports": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SweepSupports"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "material": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material",
+          "x-ref": "material"
+        }
+      },
+      "title": "GenSweep",
+      "type": "object",
+      "x-tier": "v2"
+    },
     "GenTableSet": {
       "additionalProperties": false,
       "description": "A table with chairs placed around it, all facing it.",
@@ -3848,12 +4032,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -3990,6 +4175,7 @@
               "shelf_fill": "#/$defs/GenShelfFill",
               "shelving": "#/$defs/GenShelving",
               "stairs": "#/$defs/GenStairs",
+              "sweep": "#/$defs/GenSweep",
               "table_set": "#/$defs/GenTableSet",
               "tree": "#/$defs/GenTree",
               "wall_run": "#/$defs/GenWallRun"
@@ -4077,6 +4263,9 @@
             },
             {
               "$ref": "#/$defs/GenRadialArray"
+            },
+            {
+              "$ref": "#/$defs/GenSweep"
             }
           ],
           "title": "Generator"
@@ -4170,12 +4359,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -4655,12 +4845,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -4978,12 +5169,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -5289,7 +5481,7 @@
       ],
       "title": "ModCrater",
       "type": "object",
-      "x-tier": "later"
+      "x-tier": "v2"
     },
     "ModErosion": {
       "additionalProperties": false,
@@ -5775,12 +5967,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -6023,12 +6216,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -6364,12 +6558,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -6583,12 +6778,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -11488,12 +11684,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -11771,6 +11968,14 @@
           ],
           "title": "Yaw",
           "type": "array"
+        },
+        "materials": {
+          "description": "Material overrides for every copy, as on asset nodes.",
+          "items": {
+            "$ref": "#/$defs/MaterialSlotOverride"
+          },
+          "title": "Materials",
+          "type": "array"
         }
       },
       "required": [
@@ -11860,12 +12065,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -12261,6 +12467,68 @@
       "type": "object",
       "x-tier": "v1"
     },
+    "SweepSupports": {
+      "additionalProperties": false,
+      "description": "Posts under a sweep, from its underside down to the ground.",
+      "properties": {
+        "spacing": {
+          "default": 6.0,
+          "description": "Distance between posts along the line.",
+          "exclusiveMinimum": 0.5,
+          "title": "Spacing",
+          "type": "number"
+        },
+        "shape": {
+          "default": "cylinder",
+          "enum": [
+            "box",
+            "cylinder"
+          ],
+          "title": "Shape",
+          "type": "string"
+        },
+        "width": {
+          "default": 0.3,
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "number"
+        },
+        "asset": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Place this asset on the ground instead of a post; it is not stretched.",
+          "title": "Asset",
+          "x-ref": "asset"
+        },
+        "material": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material",
+          "x-ref": "material"
+        }
+      },
+      "title": "SweepSupports",
+      "type": "object",
+      "x-tier": "v2"
+    },
     "TerrainLayer": {
       "additionalProperties": false,
       "description": "A material painted onto the terrain by rules. Later layers paint over earlier ones.",
@@ -12363,12 +12631,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -12590,6 +12859,22 @@
           "description": "Fills everything below this height with water.",
           "title": "Water Level"
         },
+        "water_material": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "What fills it: water by default, or e.g. the 'lava' or 'acid' preset.",
+          "title": "Water Material",
+          "x-ref": "material"
+        },
         "holes": {
           "description": "Areas with no ground, e.g. cave mouths.",
           "items": {
@@ -12708,12 +12993,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -13119,12 +13405,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -13442,12 +13729,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [

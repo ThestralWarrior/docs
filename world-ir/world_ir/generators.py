@@ -176,6 +176,7 @@ class GenBuilding(IRModel):
     facade_style: list[str] = Field(default_factory=list, description="e.g. ['timber', 'alpine'].")
     wall_material: MaterialRef = None
     trim_material: MaterialRef = None
+    floor_material: MaterialRef = None
     interior: Literal["none", "shell"] = Field("none", description="'shell' adds floors and leaves rooms empty.")
 
 
@@ -402,6 +403,50 @@ class GenParkingLot(IRModel):
 # Generic ----------------------------------------------------------------------
 
 
+class SweepSupports(IRModel):
+    """Posts under a sweep, from its underside down to the ground."""
+
+    model_config = cfg("v2")
+
+    spacing: float = Field(6.0, gt=0.5, description="Distance between posts along the line.")
+    shape: Literal["box", "cylinder"] = "cylinder"
+    width: float = Field(0.3, gt=0)
+    asset: Optional[Id] = Field(
+        None,
+        description="Place this asset on the ground instead of a post; it is not stretched.",
+        json_schema_extra=ref("asset"),
+    )
+    material: MaterialRef = None
+
+
+class GenSweep(IRModel):
+    """A cross-section swept along a line: pipes, cables, rails, monorail beams, neon tubes, conduits.
+
+    The line runs through the centre of the profile. Give a path node or points in the
+    node's own space. With conform_to_terrain the line keeps `elevation` metres above
+    the ground; otherwise it keeps the line's own heights plus `elevation`.
+    """
+
+    model_config = cfg("v2")
+
+    gen: Literal["sweep"] = "sweep"
+    path: Optional[Id] = Field(None, json_schema_extra=ref("path"))
+    points: Optional[list[Vec3]] = Field(None, description="[x, y, z] points, used when no path is given.")
+    closed: bool = Field(False, description="Points only: join the end back to the start.")
+    smooth: bool = Field(True, description="Points only: curve through the points.")
+    profile: Literal["circle", "rect"] = "circle"
+    radius: float = Field(0.15, gt=0, description="Circle profile radius.")
+    size: Vec2 = Field((0.4, 0.3), description="Rect profile [width, height].")
+    segments: int = Field(12, ge=3, le=64, description="Facets around a circle profile.")
+    elevation: float = Field(0.0, description="Height of the line above the ground or above its points.")
+    offset: float = Field(0.0, description="Sideways shift from the line; positive is to the right of travel.")
+    conform_to_terrain: Optional[bool] = Field(
+        None, description="Follow the ground. Empty means: as the path does, or no for points."
+    )
+    supports: Optional[SweepSupports] = None
+    material: MaterialRef = None
+
+
 class GenArray(IRModel):
     """Copies an asset in a 1D, 2D or 3D grid: rows of seats, columns, crates."""
 
@@ -459,6 +504,7 @@ Generator = Annotated[
         GenParkingLot,
         GenArray,
         GenRadialArray,
+        GenSweep,
     ],
     Field(discriminator="gen"),
 ]
@@ -480,5 +526,5 @@ GENERATOR_GROUPS: dict[str, list[type[IRModel]]] = {
     "Interior": [GenShelving, GenTableSet, GenKitchenRun, GenShelfFill, GenRug, GenCurtains],
     "Nature": [GenTree, GenRock, GenBush, GenGrass, GenFlowerBed],
     "Urban": [GenRoad, GenAlongPath, GenParkingLot],
-    "Generic": [GenArray, GenRadialArray],
+    "Generic": [GenArray, GenRadialArray, GenSweep],
 }

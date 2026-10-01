@@ -14,7 +14,7 @@ from .common import Color, IRModel, Vec2, Vec3, cfg
 from .environment import Environment
 
 LOWERED_FORMAT = "lowered-1"
-LOWERING_VERSION = "0.2.0"
+LOWERING_VERSION = "0.3.0"
 THREE_VERSION = "0.186.1"
 
 Matrix = Annotated[
@@ -124,6 +124,7 @@ class LInstances(ItemBase):
 
     type: Literal["instances"] = "instances"
     asset: Optional[str] = Field(None, description="Asset to copy; or give shape, size and material.")
+    materials: dict[str, str] = Field(default_factory=dict, description="Asset copies: slot to lowered material ID.")
     shape: Optional[Literal["box", "sphere", "cylinder", "cone"]] = None
     size: Optional[Vec3] = None
     material: Optional[str] = None
@@ -180,6 +181,20 @@ Item = Annotated[
 ]
 
 
+class LBehavior(IRModel):
+    """An animation the loader plays on a set of items. Item matrices stay the rest pose."""
+
+    model_config = cfg("v2")
+
+    node: str = Field(description="The IR node that has the behaviour.")
+    preset: Literal["spin", "bob", "sway", "flicker", "follow_path"]
+    items: list[str] = Field(description="Items it moves: everything lowered from the node and its children.")
+    origin: Matrix = Field(description="The node's world matrix: the pivot and axes for spin, bob and sway.")
+    params: dict[str, Union[float, str, bool]] = Field(default_factory=dict)
+    path: Optional[list[Vec3]] = Field(None, description="follow_path: world points the node's origin travels through.")
+    closed: bool = False
+
+
 class Unsupported(IRModel):
     """A node this lowering version skipped. Its children are still lowered."""
 
@@ -203,5 +218,6 @@ class LoweredScene(IRModel):
     assets: dict[str, LAsset]
     items: list[Item]
     bounds: Optional[tuple[Vec3, Vec3]] = Field(None, description="World [min, max] of all geometry.")
+    behaviors: list[LBehavior] = Field(default_factory=list)
     unsupported: list[Unsupported] = Field(default_factory=list)
     extras: dict[str, Any] = Field(default_factory=dict)

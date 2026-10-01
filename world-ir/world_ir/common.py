@@ -194,9 +194,15 @@ class Provenance(IRModel):
 
 
 class Behavior(IRModel):
-    """A preset behaviour with parameters. Never free-form code."""
+    """A preset behaviour with parameters. Never free-form code.
 
-    model_config = cfg("later")
+    The viewer plays spin (speed_deg_s, axis), bob (amplitude_m, period_s, phase),
+    sway (angle_deg, period_s, axis), flicker (amount, speed; lights only) and
+    follow_path (speed_m_s, offset_m, height_m). The rest are not played yet.
+    A behaviour moves the node and everything under it.
+    """
+
+    model_config = cfg("v2")
 
     preset: Literal[
         "spin",

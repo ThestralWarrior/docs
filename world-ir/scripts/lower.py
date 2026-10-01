@@ -5,6 +5,7 @@ python scripts/lower.py examples/*.json --out-dir viewer/scenes
 """
 
 import argparse
+import json
 import pathlib
 import sys
 
@@ -13,6 +14,19 @@ sys.path.insert(0, str(ROOT))
 
 from world_ir import World  # noqa: E402
 from world_ir.lower import lower  # noqa: E402
+
+
+def scene_json(scene) -> str:
+    """One line per top-level field and per item, so diffs show which items changed."""
+    data = json.loads(scene.model_dump_json(exclude_none=True))
+    parts = []
+    for key, value in data.items():
+        if key == "items":
+            body = ",\n".join("  " + json.dumps(item, separators=(",", ":")) for item in value)
+            parts.append(f' "items": [\n{body}\n ]')
+        else:
+            parts.append(f" {json.dumps(key)}: {json.dumps(value, separators=(',', ':'))}")
+    return "{\n" + ",\n".join(parts) + "\n}\n"
 
 
 def main() -> None:
@@ -30,7 +44,7 @@ def main() -> None:
         if args.out_dir:
             out = args.out_dir / path.name
         out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(scene.model_dump_json(indent=1, exclude_none=True) + "\n")
+        out.write_text(scene_json(scene))
         skipped = ", ".join(f"{u.node} ({u.kind})" for u in scene.unsupported)
         print(f"{path} → {out}: {len(scene.items)} items" + (f"; skipped {skipped}" if skipped else ""))
 

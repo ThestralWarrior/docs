@@ -190,13 +190,13 @@ Small objects used by many nodes.
 
 #### Behavior
 
-*Tier later.* A preset behaviour with parameters. Never free-form code.
+*Tier v2.* A preset behaviour with parameters. Never free-form code.
 
 | Field | Type | Default | Tier | Description |
 |---|---|---|---|---|
-| `preset` | "spin" \| "bob" \| "sway" \| "flicker" \| "open_on_approach" \| "toggle_on_click" \| "follow_path" \| "look_at_viewer" | required | later |  |
-| `params` | map[string → number \| string \| boolean] | auto | later | Preset parameters, e.g. {'speed_deg_s': 30} for spin. |
-| `path` | id (optional) | none | later | For follow_path: the path node. Refers to: path. |
+| `preset` | "spin" \| "bob" \| "sway" \| "flicker" \| "open_on_approach" \| "toggle_on_click" \| "follow_path" \| "look_at_viewer" | required | v2 |  |
+| `params` | map[string → number \| string \| boolean] | auto | v2 | Preset parameters, e.g. {'speed_deg_s': 30} for spin. |
+| `path` | id (optional) | none | v2 | For follow_path: the path node. Refers to: path. |
 
 #### Opening
 
@@ -241,13 +241,16 @@ Sky, sun, fog and other world-wide settings.
 
 | Field | Type | Default | Tier | Description |
 |---|---|---|---|---|
-| `sky` | SkyColor \| SkyGradient \| SkyProcedural \| SkyHdri | auto | v1 |  |
+| `sky` | one of several kinds | auto | v1 |  |
 | `sun` | Sun (optional) | none | v1 | Leave empty for windowless interiors. |
 | `ambient` | Ambient | auto | v1 |  |
 | `fog` | FogLinear \| FogExp2 (optional) | none | v1 |  |
 | `time_of_day` | string (optional) | none | v1 | 'HH:MM'. When set, tools may derive the sun position from it. |
 | `tone_mapping` | "none" \| "linear" \| "reinhard" \| "cineon" \| "aces" \| "agx" \| "neutral" | "aces" | v1 |  |
 | `exposure` | number | 1.0 | v1 | (>0) |
+| `reflections` | "none" \| "studio" | "none" | v2 | Image-based light for reflections. Without it, fully metallic materials look nearly black. |
+| `reflection_intensity` | number | 1.0 | v2 | (≥0) |
+| `post` | PostEffects (optional) | none | v2 |  |
 | `gravity_m_s2` | number | -9.81 | v1 |  |
 | `weather` | Weather (optional) | none | later |  |
 | `wind` | Wind (optional) | none | later |  |
@@ -292,6 +295,47 @@ Sky, sun, fog and other world-wide settings.
 | `intensity` | number | 1.0 | v2 | (≥0) |
 | `use_as_background` | boolean | true | v2 |  |
 
+#### `type: "space"` · SkySpace
+
+*Tier v2.* A night or airless sky: a dark gradient, a starfield and distant planets and moons.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `zenith` | colour | "#04050c" | v2 | sRGB hex colour, #rrggbb. |
+| `horizon` | colour | "#1d1830" | v2 | sRGB hex colour, #rrggbb. |
+| `stars` | integer | 4000 | v2 | Number of stars. (≥0 ≤50000) |
+| `star_brightness` | number | 1.0 | v2 | (≥0 ≤4) |
+| `milky_way` | [number × 2] (optional) | none | v2 | [azimuth_deg, tilt_deg] of a dense band of stars across the sky, or empty for none. |
+| `bodies` | list[CelestialBody] | auto | v2 |  |
+
+#### CelestialBody
+
+*Tier v2.* A planet, moon or star drawn far away on the sky. Lit by the sun, so it shows a phase.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `name` | string (optional) | none | v2 |  |
+| `azimuth_deg` | number | required | v2 | Compass direction; 0 is +Z, 90 is +X, like the sun. |
+| `elevation_deg` | number | required | v2 | Angle above the horizon. (≥-10 ≤90) |
+| `angular_size_deg` | number | 8.0 | v2 | Apparent diameter. The real Moon is about 0.5. (>0 ≤90) |
+| `style` | "rocky" \| "gas" \| "ice" \| "star" | "rocky" | v2 | 'star' glows instead of being lit. |
+| `color` | colour | "#b9b2a7" | v2 | sRGB hex colour, #rrggbb. |
+| `band_color` | colour (optional) | none | v2 | Gas giants: colour of the alternating bands. |
+| `ring` | PlanetRing (optional) | none | v2 |  |
+| `glow` | number | 0.0 | v2 | Emissive strength; above about 1 it blooms. (≥0) |
+
+#### PlanetRing
+
+*Tier v2.* A flat ring around a celestial body, sized relative to the body's radius.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `inner` | number | 1.4 | v2 | Inner edge, in body radii. (>1) |
+| `outer` | number | 2.3 | v2 | Outer edge, in body radii. (>1) |
+| `tilt_deg` | number | 20.0 | v2 | Tilt of the ring plane from edge-on. (≥-90 ≤90) |
+| `color` | colour | "#d8c7a6" | v2 | sRGB hex colour, #rrggbb. |
+| `opacity` | number | 0.75 | v2 | (≥0 ≤1) |
+
 #### Sun
 
 *Tier v1.* The main directional light for exteriors.
@@ -335,6 +379,24 @@ Sky, sun, fog and other world-wide settings.
 |---|---|---|---|---|
 | `color` | colour | "#dfe9f2" | v1 | sRGB hex colour, #rrggbb. |
 | `density` | number | 0.015 | v1 | (>0) |
+
+#### PostEffects
+
+*Tier v2.* Screen effects applied after rendering.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `bloom` | Bloom (optional) | none | v2 |  |
+
+#### Bloom
+
+*Tier v2.* Glow around bright pixels: emissive materials, lamps, lava, stars.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `strength` | number | 0.8 | v2 | (≥0 ≤3) |
+| `radius` | number | 0.4 | v2 | How far the glow spreads. (≥0 ≤1) |
+| `threshold` | number | 0.9 | v2 | Brightness above which pixels glow, before tone mapping. (≥0) |
 
 #### Weather
 
@@ -498,6 +560,17 @@ Registries that nodes refer to by ID.
 | `asphalt` | base_color=#3b3b3d, roughness=0.9 |
 | `foliage` | base_color=#3f6d2e, roughness=0.9 |
 | `bark` | base_color=#5a4632, roughness=1.0 |
+| `regolith` | base_color=#8a7d70, roughness=1.0 |
+| `regolith_dark` | base_color=#4f4650, roughness=1.0 |
+| `ice` | base_color=#cfe6f2, roughness=0.15, transmission=0.3 |
+| `lava` | base_color=#1a0602, roughness=0.9, emissive=#ff4510, emissive_intensity=1.6 |
+| `acid` | base_color=#2f4a0c, roughness=0.2, emissive=#8cff2a, emissive_intensity=1.2 |
+| `hull_white` | base_color=#d9dde2, metallic=0.2, roughness=0.45 |
+| `hull_grey` | base_color=#6d747c, metallic=0.3, roughness=0.5 |
+| `glass_tinted` | base_color=#9fd8e6, roughness=0.25, transmission=0.85 |
+| `neon_cyan` | base_color=#0a1a1f, emissive=#38f2ff, emissive_intensity=2.5, roughness=0.4 |
+| `neon_magenta` | base_color=#1f0a1a, emissive=#ff3ad2, emissive_intensity=2.5, roughness=0.4 |
+| `neon_amber` | base_color=#1f150a, emissive=#ffb238, emissive_intensity=2.5, roughness=0.4 |
 
 ## Node kinds
 
@@ -518,7 +591,7 @@ Everything that can appear in the scene tree. Every kind also has the common nod
 | `visible` | boolean | true | v1 |  |
 | `locked` | boolean | false | v1 | The repair model may not change this node. |
 | `physics` | Physics (optional) | none | v2 |  |
-| `behaviors` | list[Behavior] | auto | later |  |
+| `behaviors` | list[Behavior] | auto | v2 | Animation presets the viewer plays. Validators check the rest pose, where the node is placed. |
 | `source` | Provenance (optional) | none | v1 |  |
 | `children` | list[Node] | auto | v1 |  |
 | `extras` | object | auto | v1 | Free-form data tools may attach. |
@@ -598,6 +671,7 @@ No fields beyond the common ones.
 | `modifiers` | list[TerrainModifier] | auto | v2 | Applied in order. |
 | `layers` | list[TerrainLayer] | auto | v2 | Painted in order. |
 | `water_level` | number (optional) | none | v2 | Fills everything below this height with water. |
+| `water_material` | id (optional) | none | v2 | What fills it: water by default, or e.g. the 'lava' or 'acid' preset. Refers to: material. |
 | `holes` | list[list[[number × 2], ≥3]] | auto | v2 | Areas with no ground, e.g. cave mouths. |
 | `collider` | boolean | true | v2 |  |
 
@@ -774,6 +848,7 @@ No fields beyond the common ones.
 | `weight` | number | 1.0 | v2 | Relative share among the scatter's items. (>0) |
 | `scale` | [number × 2] | (0.8, 1.2) | v2 | Random uniform scale range. |
 | `yaw` | [number × 2] | (0.0, 360.0) | v2 | Random yaw range in degrees. |
+| `materials` | list[MaterialSlotOverride] | auto | v2 | Material overrides for every copy, as on asset nodes. |
 
 ## Terrain
 
@@ -884,14 +959,14 @@ Height sources, edits applied in order, and painted material layers.
 
 #### `op: "crater"` · ModCrater
 
-*Tier later.* A bowl with a raised rim.
+*Tier v2.* A bowl with a raised rim.
 
 | Field | Type | Default | Tier | Description |
 |---|---|---|---|---|
-| `center` | [number × 2] | required | later |  |
-| `radius` | number | required | later | (>0) |
-| `depth` | number | required | later | (>0) |
-| `rim_height` | number | 0.5 | later | (≥0) |
+| `center` | [number × 2] | required | v2 |  |
+| `radius` | number | required | v2 | (>0) |
+| `depth` | number | required | v2 | (>0) |
+| `rim_height` | number | 0.5 | v2 | (≥0) |
 
 #### `op: "erosion"` · ModErosion
 
@@ -1063,6 +1138,7 @@ Parametric geometry. Agents pick a generator and set numbers; they never write g
 | `facade_style` | list[string] | auto | v2 | e.g. ['timber', 'alpine']. |
 | `wall_material` | id (optional) | none | v2 | Refers to: material. |
 | `trim_material` | id (optional) | none | v2 | Refers to: material. |
+| `floor_material` | id (optional) | none | v2 | Refers to: material. |
 | `interior` | "none" \| "shell" | "none" | v2 | 'shell' adds floors and leaves rooms empty. |
 
 #### `gen: "platform"` · GenPlatform
@@ -1285,6 +1361,61 @@ Parametric geometry. Agents pick a generator and set numbers; they never write g
 | `start_deg` | number | 0.0 | v2 |  |
 | `sweep_deg` | number | 360.0 | v2 | (>0 ≤360) |
 | `face` | "center" \| "outward" \| "tangent" \| "fixed" | "center" | v2 |  |
+
+#### `gen: "sweep"` · GenSweep
+
+*Tier v2.* A cross-section swept along a line: pipes, cables, rails, monorail beams, neon tubes, conduits.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `path` | id (optional) | none | v2 | Refers to: path. |
+| `points` | list[[number × 3]] (optional) | none | v2 | [x, y, z] points, used when no path is given. |
+| `closed` | boolean | false | v2 | Points only: join the end back to the start. |
+| `smooth` | boolean | true | v2 | Points only: curve through the points. |
+| `profile` | "circle" \| "rect" | "circle" | v2 |  |
+| `radius` | number | 0.15 | v2 | Circle profile radius. (>0) |
+| `size` | [number × 2] | (0.4, 0.3) | v2 | Rect profile [width, height]. |
+| `segments` | integer | 12 | v2 | Facets around a circle profile. (≥3 ≤64) |
+| `elevation` | number | 0.0 | v2 | Height of the line above the ground or above its points. |
+| `offset` | number | 0.0 | v2 | Sideways shift from the line; positive is to the right of travel. |
+| `conform_to_terrain` | boolean (optional) | none | v2 | Follow the ground. Empty means: as the path does, or no for points. |
+| `supports` | SweepSupports (optional) | none | v2 |  |
+| `material` | id (optional) | none | v2 | Refers to: material. |
+
+### Parts used by generators
+
+#### WindowGrid
+
+*Tier v2.* Regular windows on a building's facades.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `per_floor` | integer | 3 | v2 | Windows per long facade per floor. (≥0) |
+| `width` | number | 1.0 | v2 | (>0) |
+| `height` | number | 1.3 | v2 | (>0) |
+| `sill` | number | 0.9 | v2 | (≥0) |
+| `asset` | id (optional) | none | v2 | Refers to: asset. |
+
+#### KitchenModule
+
+*Tier v2.* One unit in a kitchen run.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `type` | "base" \| "drawers" \| "sink" \| "stove" \| "oven" \| "dishwasher" \| "fridge" \| "tall" \| "gap" \| "corner" | required | v2 |  |
+| `width` | number | 0.6 | v2 | (>0) |
+
+#### SweepSupports
+
+*Tier v2.* Posts under a sweep, from its underside down to the ground.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `spacing` | number | 6.0 | v2 | Distance between posts along the line. (>0.5) |
+| `shape` | "box" \| "cylinder" | "cylinder" | v2 |  |
+| `width` | number | 0.3 | v2 | (>0) |
+| `asset` | id (optional) | none | v2 | Place this asset on the ground instead of a post; it is not stretched. Refers to: asset. |
+| `material` | id (optional) | none | v2 | Refers to: material. |
 
 ## Relations
 
@@ -1785,6 +1916,7 @@ What lowering produces from a world file, and what both the validators and the T
 | `assets` | map[string → LAsset] | required | v1 |  |
 | `items` | list[one of several kinds] | required | v1 |  |
 | `bounds` | [[number × 3] × 2] (optional) | none | v1 | World [min, max] of all geometry. |
+| `behaviors` | list[LBehavior] | auto | v1 |  |
 | `unsupported` | list[Unsupported] | auto | v1 |  |
 | `extras` | object | auto | v1 |  |
 
@@ -1865,6 +1997,7 @@ What lowering produces from a world file, and what both the validators and the T
 | Field | Type | Default | Tier | Description |
 |---|---|---|---|---|
 | `asset` | string (optional) | none | v1 | Asset to copy; or give shape, size and material. |
+| `materials` | map[string → string] | auto | v1 | Asset copies: slot to lowered material ID. |
 | `shape` | "box" \| "sphere" \| "cylinder" \| "cone" (optional) | none | v1 |  |
 | `size` | [number × 3] (optional) | none | v1 |  |
 | `material` | string (optional) | none | v1 |  |
@@ -1938,6 +2071,20 @@ What lowering produces from a world file, and what both the validators and the T
 | `transmission` | number | 0.0 | v1 |  |
 | `ior` | number | 1.5 | v1 |  |
 | `double_sided` | boolean | false | v1 |  |
+
+#### LBehavior
+
+*Tier v2.* An animation the loader plays on a set of items. Item matrices stay the rest pose.
+
+| Field | Type | Default | Tier | Description |
+|---|---|---|---|---|
+| `node` | string | required | v2 | The IR node that has the behaviour. |
+| `preset` | "spin" \| "bob" \| "sway" \| "flicker" \| "follow_path" | required | v2 |  |
+| `items` | list[string] | required | v2 | Items it moves: everything lowered from the node and its children. |
+| `origin` | [number × 16] | required | v2 | The node's world matrix: the pivot and axes for spin, bob and sway. |
+| `params` | map[string → number \| string \| boolean] | auto | v2 |  |
+| `path` | list[[number × 3]] (optional) | none | v2 | follow_path: world points the node's origin travels through. |
+| `closed` | boolean | false | v2 |  |
 
 #### Unsupported
 
@@ -2071,7 +2218,7 @@ Suggested values. Fields that use them accept other strings too.
 
 - **room_types**: bedroom, kids_room, living_room, kitchen, dining_room, bathroom, toilet, office, study, library, hallway, entrance, stairwell, closet, laundry, garage, attic, basement, studio, workshop, classroom, meeting_room, open_office, lobby, shop, cafe, restaurant, bar, gym, clinic, gallery, chapel
 - **archetypes (interior)**: bedroom, kids_room, living_room, kitchen, dining_room, bathroom, toilet, office, study, library, hallway, entrance, stairwell, closet, laundry, garage, attic, basement, studio, workshop, classroom, meeting_room, open_office, lobby, shop, cafe, restaurant, bar, gym, clinic, gallery, chapel
-- **archetypes (exterior)**: forest_clearing, meadow, beach, desert, mountain_pass, lakeside, riverbank, village_square, farmyard, garden, park, city_street, plaza, campsite, ruins, harbour
-- **biomes**: temperate_forest, conifer_forest, grassland, desert, tundra, alpine, tropical, wetland, coastal, urban
+- **archetypes (exterior)**: forest_clearing, meadow, beach, desert, mountain_pass, lakeside, riverbank, village_square, farmyard, garden, park, city_street, plaza, campsite, ruins, harbour, space_colony, spaceport
+- **biomes**: temperate_forest, conifer_forest, grassland, desert, tundra, alpine, tropical, wetland, coastal, urban, lunar, volcanic, alien
 - **style_tags**: low_poly, stylised, realistic, scandinavian, industrial, mid_century, rustic, japanese, victorian, minimalist, cottage, brutalist, medieval, sci_fi, post_apocalyptic
 - **functions**: sleep, sit, work, eat, cook, store, display, wash, light, decorate, play, exercise

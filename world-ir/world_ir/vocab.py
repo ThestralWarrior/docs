@@ -54,6 +54,8 @@ ARCHETYPES: dict[str, list[str]] = {
         "campsite",
         "ruins",
         "harbour",
+        "space_colony",
+        "spaceport",
     ],
 }
 
@@ -68,6 +70,9 @@ BIOMES: list[str] = [
     "wetland",
     "coastal",
     "urban",
+    "lunar",
+    "volcanic",
+    "alien",
 ]
 
 STYLE_TAGS: list[str] = [

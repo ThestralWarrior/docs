@@ -6,8 +6,9 @@ transforms) and emits simple items with world-space matrices. The validators
 and the Three.js loader both read the result, so they always agree on what is where.
 
 Lowered: group, asset, primitive, room, light, camera, zone, marker, terrain
-(heights, edits, painted layers, water level), path, prefab, scatter, and the
-generators listed in lower_generators.py. Anything else (water bodies, decals,
+(heights, edits, painted layers, water level), path, prefab, scatter, the
+generators listed in lower_generators.py, and behaviours (recorded for the
+loader to play; items keep their rest pose). Anything else (water bodies, decals,
 text, audio, particles, a few generators) is listed in
 ``LoweredScene.unsupported`` and skipped; its children are still lowered.
 """
@@ -42,6 +43,7 @@ from .lowered import (
     THREE_VERSION,
     LAsset,
     LAssetItem,
+    LBehavior,
     LCamera,
     LHeightfield,
     LInstances,
@@ -77,6 +79,7 @@ CEILING_THICKNESS = 0.1
 DOOR_PANEL_THICKNESS = 0.04
 GLASS_THICKNESS = 0.02
 SCATTER_CAP = 3000
+PLAYED_BEHAVIORS = ("spin", "bob", "sway", "flicker", "follow_path")
 
 
 class _Lowerer(GeneratorMixin):
@@ -85,6 +88,7 @@ class _Lowerer(GeneratorMixin):
         self.items: list[Any] = []
         self.unsupported: list[Unsupported] = []
         self.warnings: list[str] = []
+        self.behaviors: list[LBehavior] = []
         self.deferred: list[tuple[Any, Mat, bool]] = []
         self._owner: Optional[str] = None
         self.materials: dict[str, LMaterial] = {}
@@ -144,6 +148,8 @@ class _Lowerer(GeneratorMixin):
         nodes = self._walk_all()
         self.path_world: dict[str, list[tuple[float, float, float]]] = {}
         self.path_width: dict[str, float] = {}
+        self.path_closed: dict[str, bool] = {}
+        self.path_conform: dict[str, bool] = {}
         self.zone_world: dict[str, list[tuple[float, float]]] = {}
         for node in nodes:
             m = self.node_world[node.id]
@@ -151,6 +157,8 @@ class _Lowerer(GeneratorMixin):
                 curve = polyline([tuple(p) for p in node.points], node.closed, node.smooth)
                 self.path_world[node.id] = [apply(m, p) for p in curve]
                 self.path_width[node.id] = node.width
+                self.path_closed[node.id] = node.closed
+                self.path_conform[node.id] = node.conform_to_terrain
             elif isinstance(node, ZoneNode):
                 self.zone_world[node.id] = [(p[0], p[2]) for p in (apply(m, (x, 0.0, z)) for x, z in node.area)]
         self.terrains: list[tuple[Any, Mat, Mat, Heightfield]] = []
@@ -285,6 +293,7 @@ class _Lowerer(GeneratorMixin):
             PrefabNode: self._prefab,
         }
         kind = type(node)
+        first_item = len(self.items)
         if kind is ScatterNode:
             self.deferred.append((node, m, visible, self._owner))
         elif kind in handler:
@@ -294,6 +303,41 @@ class _Lowerer(GeneratorMixin):
             self.unsupported.append(Unsupported(node=node.id, kind=node.kind, reason="not lowered in this version"))
         for child in node.children:
             self.lower_node(child, m, visible)
+        if node.behaviors:
+            self._behaviors(node, m, [item.id for item in self.items[first_item:]])
+
+    def _behaviors(self, node: Any, m: Mat, items: list[str]) -> None:
+        """Records the node's animations for the loader. Items keep their rest pose."""
+        for b in node.behaviors:
+            if b.preset not in PLAYED_BEHAVIORS:
+                self.warnings.append(f"'{node.id}': behaviour '{b.preset}' is not played yet")
+                continue
+            path = None
+            closed = False
+            if b.preset == "follow_path":
+                line = self.path_world.get(b.path or "", [])
+                if len(line) < 2:
+                    self.warnings.append(f"'{node.id}': follow_path needs a path")
+                    continue
+                closed = self.path_closed.get(b.path, False)
+                lift = float(b.params.get("height_m", 0.0))
+                path = []
+                for x, y, z in line:
+                    ground = self.ground_height(x, z) if self.path_conform.get(b.path) else None
+                    path.append((round(x, 3), round((ground if ground is not None else y) + lift, 3), round(z, 3)))
+                if closed and len(path) > 2 and path[0] == path[-1]:
+                    path = path[:-1]
+            self.behaviors.append(
+                LBehavior(
+                    node=node.id,
+                    preset=b.preset,
+                    items=items,
+                    origin=column_major(m),
+                    params=b.params,
+                    path=path,
+                    closed=closed,
+                )
+            )
 
     # Node kinds --------------------------------------------------------------------
 
@@ -451,14 +495,14 @@ class _Lowerer(GeneratorMixin):
                 "box",
                 (hf.size[0], 0.02, hf.size[1]),
                 wm,
-                self._preset("water"),
+                node.water_material or self._preset("water"),
                 visible,
             )
 
     def _path(self, node: PathNode, m: Mat, parent: Mat, visible: bool) -> None:
         line = self.path_world[node.id]
-        if len(line) < 2:
-            return
+        if len(line) < 2 or node.purpose == "guide":
+            return  # guide paths only steer other things: sweeps, copies, follow_path
         left, right = [], []
         half = node.width / 2
         for i, p in enumerate(line):
@@ -787,15 +831,22 @@ class _Lowerer(GeneratorMixin):
                 y = floor_y
             if node.height_range and not (node.height_range[0] <= y <= node.height_range[1]):
                 continue
-            item = rng.choices(node.items, weights=weights)[0]
+            index = rng.choices(range(len(node.items)), weights=weights)[0]
+            item = node.items[index]
             s = rng.uniform(*item.scale)
             yaw = rng.uniform(*item.yaw)
-            placed.setdefault(item.asset, []).append((x, y, z, yaw, s))
+            placed.setdefault(index, []).append((x, y, z, yaw, s))
             grid.setdefault((gx, gz), []).append((x, z))
             accepted += 1
-        for asset, transforms in placed.items():
-            dims = self.world.assets[asset].dims
-            self._instances(node, asset, "scatter", transforms, visible, identity(), dims, asset=asset)
+        assets = [item.asset for item in node.items]
+        for index, transforms in sorted(placed.items()):
+            item = node.items[index]
+            name = item.asset if assets.count(item.asset) == 1 else f"{item.asset}_{index}"
+            dims = self.world.assets[item.asset].dims
+            materials = {o.slot: o.material for o in item.materials}
+            self._instances(
+                node, name, "scatter", transforms, visible, identity(), dims, asset=item.asset, materials=materials
+            )
 
 
 def lower(world: World) -> LoweredScene:
@@ -823,6 +874,7 @@ def lower(world: World) -> LoweredScene:
         assets={name: LAsset(uri=a.uri, dims=a.dims, front=a.front) for name, a in world.assets.items()},
         items=lowerer.items,
         bounds=scene_bounds,
+        behaviors=lowerer.behaviors,
         unsupported=lowerer.unsupported,
         extras={"warnings": sorted(set(lowerer.warnings))} if lowerer.warnings else {},
     )

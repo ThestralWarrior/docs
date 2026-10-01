@@ -1,0 +1,1668 @@
+{
+  "ir_version": "1.0",
+  "id": "scifi_colony",
+  "name": "Kepler Ridge outpost",
+  "seed": 11,
+  "brief": {
+    "prompt": "A small colony on a ridge of an alien moon: a glass-domed hub, hangars and pipe runs, a monorail loop, a landing pad with a hovering ship, glowing crystals and a lava valley under a ringed gas giant.",
+    "setting": "exterior",
+    "archetype": "space_colony",
+    "style": ["low_poly", "sci_fi"],
+    "palette": ["#38f2ff", "#ff5a1a", "#d9dde2", "#2b2142"],
+    "time_of_day": "19:10",
+    "mood": ["lonely", "awe"],
+    "required": [
+      {
+        "category": "dome",
+        "source": "prompt"
+      },
+      {
+        "category": "hangar",
+        "min": 2,
+        "source": "prompt"
+      },
+      {
+        "category": "monorail",
+        "source": "prompt"
+      },
+      {
+        "category": "landing pad",
+        "source": "prompt"
+      },
+      {
+        "category": "spaceship",
+        "source": "prompt"
+      },
+      {
+        "category": "crystal",
+        "min": 15,
+        "source": "prompt"
+      },
+      {
+        "category": "satellite dish",
+        "source": "image_brief",
+        "confidence": 0.71
+      }
+    ]
+  },
+  "environment": {
+    "sky": {
+      "type": "space",
+      "zenith": "#02030a",
+      "horizon": "#33264d",
+      "stars": 6000,
+      "star_brightness": 1.2,
+      "milky_way": [35, 28],
+      "bodies": [
+        {
+          "name": "Tessar",
+          "azimuth_deg": 152,
+          "elevation_deg": 11,
+          "angular_size_deg": 21,
+          "style": "gas",
+          "color": "#c9a37a",
+          "band_color": "#7a4e3a",
+          "ring": {
+            "inner": 1.35,
+            "outer": 2.25,
+            "tilt_deg": 12,
+            "color": "#d8c7a6",
+            "opacity": 0.7
+          }
+        },
+        {
+          "name": "Ilo",
+          "azimuth_deg": 196,
+          "elevation_deg": 44,
+          "angular_size_deg": 5,
+          "style": "rocky",
+          "color": "#a9a4b8"
+        },
+        {
+          "name": "Veyra",
+          "azimuth_deg": 118,
+          "elevation_deg": 52,
+          "angular_size_deg": 2.2,
+          "style": "ice",
+          "color": "#bfe3f0",
+          "band_color": "#ffffff"
+        }
+      ]
+    },
+    "sun": {
+      "elevation_deg": 13,
+      "azimuth_deg": 238,
+      "kelvin": 4100,
+      "intensity_lux": 2.2,
+      "shadow_map_size": 4096
+    },
+    "ambient": {
+      "type": "hemisphere",
+      "color": "#7f8fd0",
+      "ground_color": "#3d2a33",
+      "intensity": 1.1
+    },
+    "fog": {
+      "type": "exp2",
+      "color": "#2a2240",
+      "density": 0.0055
+    },
+    "time_of_day": "19:10",
+    "tone_mapping": "aces",
+    "exposure": 1.0,
+    "post": {
+      "bloom": {
+        "strength": 0.85,
+        "radius": 0.45,
+        "threshold": 0.95
+      }
+    },
+    "gravity_m_s2": -3.7
+  },
+  "materials": {
+    "regolith": {
+      "preset": "regolith",
+      "base_color": "#8d7f86"
+    },
+    "cliff": {
+      "preset": "regolith_dark",
+      "base_color": "#4a3f4d"
+    },
+    "scorched": {
+      "preset": "regolith_dark",
+      "base_color": "#2e2427"
+    },
+    "deck": {
+      "base_color": "#7d8189",
+      "roughness": 0.7,
+      "tags": ["floor"]
+    },
+    "lava": {
+      "preset": "lava"
+    },
+    "hull": {
+      "preset": "hull_white"
+    },
+    "hull_dark": {
+      "preset": "hull_grey"
+    },
+    "pipe_orange": {
+      "base_color": "#e0782e",
+      "metallic": 0.3,
+      "roughness": 0.5
+    },
+    "dome_glass": {
+      "preset": "glass_tinted",
+      "double_sided": true
+    },
+    "neon_cyan": {
+      "preset": "neon_cyan"
+    },
+    "neon_cyan_soft": {
+      "preset": "neon_cyan",
+      "emissive_intensity": 1.4
+    },
+    "neon_magenta": {
+      "preset": "neon_magenta"
+    },
+    "neon_amber": {
+      "preset": "neon_amber"
+    },
+    "crystal_glow": {
+      "base_color": "#2fd9a0",
+      "emissive": "#2fffc0",
+      "emissive_intensity": 1.3,
+      "roughness": 0.3
+    },
+    "holo": {
+      "base_color": "#0a1a1f",
+      "emissive": "#38f2ff",
+      "emissive_intensity": 2.0,
+      "opacity": 0.7
+    }
+  },
+  "assets": {
+    "greenhouse": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/hangar-roundglass.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "greenhouse",
+      "dims": [13.085, 5.6, 11.332],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "hangar_large": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/hangar-largea.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "hangar",
+      "dims": [8.0, 4.0, 12.0],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "hangar_small": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/hangar-smalla.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "hangar",
+      "dims": [7.0, 3.5, 7.0],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "rocket_base": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rocket-basea.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "rocket part",
+      "dims": [7.2, 6.4, 7.2],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "rocket_fuel": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rocket-fuela.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "rocket part",
+      "dims": [4.0, 2.0, 4.0],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "rocket_sides": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rocket-sidesa.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "rocket part",
+      "dims": [4.0, 4.0, 4.0],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "rocket_top": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rocket-topa.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "rocket part",
+      "dims": [4.0, 3.2, 4.0],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "dish_large": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/satellitedish-large.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "satellite dish",
+      "dims": [5.109, 4.901, 4.436],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "dish": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/satellitedish.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "satellite dish",
+      "dims": [2.794, 2.502, 2.299],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "generator": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/machine-generatorlarge.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "generator",
+      "dims": [3.953, 2.7, 5.139],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "antenna": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/machine-wireless.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "antenna",
+      "dims": [3.0, 2.4, 2.0],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "crystals_small": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rock-crystals.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "crystal",
+      "dims": [3.409, 1.352, 3.211],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "crystals_a": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rock-crystalslargea.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "crystal",
+      "dims": [4.162, 2.7, 4.588],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "crystals_b": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rock-crystalslargeb.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "crystal",
+      "dims": [5.636, 3.3, 5.593],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "boulder_a": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rock-largea.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "boulder",
+      "dims": [4.596, 2.5, 4.169],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "boulder_b": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rock-largeb.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "boulder",
+      "dims": [3.711, 2.0, 3.757],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "rubble": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rocks-smalla.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "rubble",
+      "dims": [3.749, 0.42, 3.479],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "meteor": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/meteor-detailed.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "meteorite",
+      "dims": [3.535, 3.0, 3.367],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "rover": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/rover.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "rover",
+      "dims": [1.714, 2.202, 2.0],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "cargo_ship": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/craft-cargoa.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "spaceship",
+      "dims": [9.0, 4.5, 13.781],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "speeder": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/craft-speedera.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "speeder",
+      "dims": [4.5, 1.8, 4.725],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "miner": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/craft-miner.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "mining craft",
+      "dims": [7.2, 2.8, 10.4],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "turret": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/turret-double.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "turret",
+      "dims": [3.6, 2.8, 2.4],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "train_front": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/monorail-trainfront.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "monorail car",
+      "dims": [2.4, 3.2, 4.2],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "train_car": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/monorail-trainpassenger.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "monorail car",
+      "dims": [2.0, 3.2, 4.0],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "landing_pad": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/platform-large.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "landing pad",
+      "dims": [14.0, 0.7, 14.0],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "barrels": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/barrels.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "barrels",
+      "dims": [2.2, 1.4, 1.986],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "astronaut_a": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/astronauta.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "astronaut",
+      "dims": [1.127, 1.85, 0.77],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "astronaut_b": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/astronautb.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "astronaut",
+      "dims": [1.127, 1.85, 0.77],
+      "style": ["low_poly", "sci_fi"]
+    },
+    "alien": {
+      "source": "kenney",
+      "uri": "assets/kenney/space/alien.glb",
+      "license": {
+        "spdx": "CC0-1.0",
+        "attribution": "Kenney Space Kit (kenney.nl)"
+      },
+      "category": "alien",
+      "dims": [0.917, 1.6, 0.626],
+      "style": ["low_poly", "sci_fi"]
+    }
+  },
+  "nodes": [
+    {
+      "kind": "terrain",
+      "id": "ground",
+      "size": [170, 170],
+      "resolution": 145,
+      "height": {
+        "source": "noise",
+        "algorithm": "ridged",
+        "seed": 11,
+        "octaves": 5,
+        "frequency": 0.016,
+        "amplitude": 9,
+        "offset": -4
+      },
+      "modifiers": [
+        {
+          "op": "bump",
+          "center": [0, 0],
+          "radius": 52,
+          "amount": 6,
+          "shape": "plateau"
+        },
+        {
+          "op": "bump",
+          "center": [58, -40],
+          "radius": 34,
+          "amount": -10
+        },
+        {
+          "op": "bump",
+          "center": [-62, 48],
+          "radius": 26,
+          "amount": -7
+        },
+        {
+          "op": "carve_path",
+          "path": "rover_trail",
+          "depth": 0.15,
+          "width": 3.2,
+          "falloff": 2.5
+        },
+        {
+          "op": "crater",
+          "center": [-44, -2],
+          "radius": 9,
+          "depth": 3,
+          "rim_height": 1.2
+        },
+        {
+          "op": "smooth",
+          "iterations": 2
+        },
+        {
+          "op": "flatten",
+          "area": {
+            "center": [0, 0],
+            "radius": 31
+          },
+          "height": 5,
+          "falloff": 7
+        },
+        {
+          "op": "flatten",
+          "area": {
+            "center": [22, 19],
+            "radius": 10.5
+          },
+          "height": 5,
+          "falloff": 5
+        }
+      ],
+      "layers": [
+        {
+          "material": "regolith"
+        },
+        {
+          "material": "cliff",
+          "rule": {
+            "slope_min_deg": 26
+          }
+        },
+        {
+          "material": "scorched",
+          "rule": {
+            "height_max": -3.0
+          }
+        },
+        {
+          "material": "deck",
+          "rule": {
+            "zone": "colony"
+          }
+        }
+      ],
+      "water_level": -4.2,
+      "water_material": "lava",
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "zone",
+      "id": "colony",
+      "name": "Colony pad",
+      "purpose": "activity",
+      "area": [
+        [29.0, 0.0],
+        [25.11, 14.5],
+        [14.5, 25.11],
+        [0.0, 29.0],
+        [-14.5, 25.11],
+        [-25.11, 14.5],
+        [-29.0, 0.0],
+        [-25.11, -14.5],
+        [-14.5, -25.11],
+        [-0.0, -29.0],
+        [14.5, -25.11],
+        [25.11, -14.5]
+      ],
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "zone",
+      "id": "landing_zone",
+      "name": "Landing zone",
+      "purpose": "clearance",
+      "area": [
+        [13, 10],
+        [31, 10],
+        [31, 28],
+        [13, 28]
+      ],
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "zone",
+      "id": "crystal_field",
+      "name": "Crystal field",
+      "purpose": "activity",
+      "area": [
+        [-78, -78],
+        [-30, -78],
+        [-26, -52],
+        [-44, -36],
+        [-78, -40]
+      ],
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "path",
+      "id": "walkway",
+      "points": [
+        [0, 0, 8.6],
+        [4, 0, 12.5],
+        [9, 0, 14.5],
+        [14.2, 0, 15.5]
+      ],
+      "width": 2.6,
+      "purpose": "walkway",
+      "material": "deck",
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "path",
+      "id": "rover_trail",
+      "points": [
+        [-22, 0, -18],
+        [-34, 0, -30],
+        [-42, 0, -46],
+        [-52, 0, -56],
+        [-60, 0, -62]
+      ],
+      "width": 2.6,
+      "purpose": "trail",
+      "material": "cliff",
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "path",
+      "id": "monorail_line",
+      "name": "Monorail loop",
+      "points": [
+        [46.0, 14.0, 0.0],
+        [39.84, 14.0, 20.0],
+        [23.0, 14.0, 34.64],
+        [0.0, 14.0, 40.0],
+        [-23.0, 14.0, 34.64],
+        [-39.84, 14.0, 20.0],
+        [-46.0, 14.0, 0.0],
+        [-39.84, 14.0, -20.0],
+        [-23.0, 14.0, -34.64],
+        [-0.0, 14.0, -40.0],
+        [23.0, 14.0, -34.64],
+        [39.84, 14.0, -20.0]
+      ],
+      "closed": true,
+      "purpose": "guide",
+      "conform_to_terrain": false,
+      "width": 1.2,
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "generator",
+      "id": "hub",
+      "name": "Command hub",
+      "tags": ["landmark"],
+      "semantic": {
+        "category": "dome"
+      },
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [0, 5.0, 0]
+      },
+      "generator": {
+        "gen": "building",
+        "footprint": [
+          [7.39, 3.06],
+          [3.06, 7.39],
+          [-3.06, 7.39],
+          [-7.39, 3.06],
+          [-7.39, -3.06],
+          [-3.06, -7.39],
+          [3.06, -7.39],
+          [7.39, -3.06]
+        ],
+        "floors": 1,
+        "floor_height": 4.2,
+        "roof": {
+          "style": "dome",
+          "pitch_deg": 42,
+          "overhang": 0.25,
+          "material": "dome_glass"
+        },
+        "windows": {
+          "per_floor": 1,
+          "width": 2.2,
+          "height": 1.3,
+          "sill": 1.3
+        },
+        "entrance": {
+          "id": "hub_door",
+          "type": "door",
+          "wall": 1,
+          "offset": 3.06,
+          "width": 1.8,
+          "height": 2.6,
+          "open": 0.0
+        },
+        "facade_style": ["sci_fi"],
+        "wall_material": "hull",
+        "trim_material": "hull_dark",
+        "floor_material": "deck"
+      },
+      "children": [
+        {
+          "kind": "primitive",
+          "id": "holo_table",
+          "name": "Holo table",
+          "shape": "cylinder",
+          "size": [2.2, 0.9, 2.2],
+          "segments": 8,
+          "material": "hull_dark",
+          "xform": {
+            "pos": [0, 0.12, 0]
+          }
+        },
+        {
+          "kind": "primitive",
+          "id": "holo_globe",
+          "name": "Hologram",
+          "shape": "sphere",
+          "size": [1.3, 1.3, 1.3],
+          "segments": 10,
+          "material": "holo",
+          "xform": {
+            "pos": [0, 1.4, 0]
+          },
+          "behaviors": [
+            {
+              "preset": "spin",
+              "params": {
+                "speed_deg_s": 25
+              }
+            }
+          ]
+        },
+        {
+          "kind": "light",
+          "id": "hub_light",
+          "type": "point",
+          "color": "#7fe8ff",
+          "intensity": 70,
+          "range": 18,
+          "xform": {
+            "pos": [0, 3.4, 0]
+          }
+        },
+        {
+          "kind": "asset",
+          "id": "crew_1",
+          "asset": "astronaut_a",
+          "xform": {
+            "pos": [2.4, 0.12, 1.2],
+            "yaw": -110
+          }
+        }
+      ]
+    },
+    {
+      "kind": "asset",
+      "id": "greenhouse",
+      "asset": "greenhouse",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [-19, 5.0, -4],
+        "yaw": 70
+      },
+      "children": [
+        {
+          "kind": "light",
+          "id": "greenhouse_light",
+          "type": "point",
+          "color": "#b6ff8a",
+          "intensity": 60,
+          "range": 14,
+          "xform": {
+            "pos": [0, 3.2, 0]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "asset",
+      "id": "hangar_east",
+      "asset": "hangar_large",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [17, 5.0, -11],
+        "yaw": -70
+      },
+      "children": [
+        {
+          "kind": "light",
+          "id": "hangar_lamp",
+          "type": "point",
+          "color": "#ffb238",
+          "intensity": 40,
+          "range": 10,
+          "xform": {
+            "pos": [0, 3.2, 6.6]
+          },
+          "behaviors": [
+            {
+              "preset": "flicker",
+              "params": {
+                "amount": 0.6,
+                "speed": 11
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "asset",
+      "id": "hangar_west",
+      "asset": "hangar_small",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [-13, 5.0, 15],
+        "yaw": 35
+      }
+    },
+    {
+      "kind": "asset",
+      "id": "generator",
+      "asset": "generator",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [-4, 5.0, -20],
+        "yaw": 0
+      }
+    },
+    {
+      "kind": "asset",
+      "id": "antenna",
+      "asset": "antenna",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [7, 5.0, -21],
+        "yaw": -15
+      }
+    },
+    {
+      "kind": "asset",
+      "id": "dish",
+      "asset": "dish_large",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [-22, 5.0, -19],
+        "yaw": 40
+      },
+      "behaviors": [
+        {
+          "preset": "spin",
+          "params": {
+            "speed_deg_s": 6
+          }
+        }
+      ]
+    },
+    {
+      "kind": "asset",
+      "id": "dish_small",
+      "asset": "dish",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [23, 5.0, 2],
+        "yaw": -60
+      }
+    },
+    {
+      "kind": "asset",
+      "id": "barrels",
+      "asset": "barrels",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [23.5, 5.0, -6],
+        "yaw": 20
+      }
+    },
+    {
+      "kind": "asset",
+      "id": "speeder",
+      "asset": "speeder",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [10, 5.0, -14.5],
+        "yaw": 160
+      }
+    },
+    {
+      "kind": "asset",
+      "id": "miner",
+      "asset": "miner",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [-24, 5.0, 13],
+        "yaw": 120
+      }
+    },
+    {
+      "kind": "asset",
+      "id": "turret",
+      "asset": "turret",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [27, 5.4423, -21],
+        "yaw": 220
+      },
+      "behaviors": [
+        {
+          "preset": "spin",
+          "params": {
+            "speed_deg_s": 9
+          }
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "id": "rocket",
+      "name": "Rocket",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [-27, 5.0, 3]
+      },
+      "children": [
+        {
+          "kind": "asset",
+          "id": "rocket_base",
+          "asset": "rocket_base",
+          "xform": {
+            "pos": [0, 0, 0]
+          }
+        },
+        {
+          "kind": "asset",
+          "id": "rocket_fuel",
+          "asset": "rocket_fuel",
+          "xform": {
+            "pos": [0, 6.4, 0]
+          }
+        },
+        {
+          "kind": "asset",
+          "id": "rocket_sides",
+          "asset": "rocket_sides",
+          "xform": {
+            "pos": [0, 8.4, 0]
+          }
+        },
+        {
+          "kind": "asset",
+          "id": "rocket_top",
+          "asset": "rocket_top",
+          "xform": {
+            "pos": [0, 12.4, 0]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "asset",
+      "id": "landing_pad",
+      "asset": "landing_pad",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [22, 5.0, 19]
+      },
+      "children": [
+        {
+          "kind": "generator",
+          "id": "pad_ring",
+          "name": "Pad marker ring",
+          "xform": {
+            "pos": [0, 0.72, 0]
+          },
+          "generator": {
+            "gen": "sweep",
+            "points": [
+              [5.2, 0, 0.0],
+              [3.68, 0, 3.68],
+              [0.0, 0, 5.2],
+              [-3.68, 0, 3.68],
+              [-5.2, 0, 0.0],
+              [-3.68, 0, -3.68],
+              [-0.0, 0, -5.2],
+              [3.68, 0, -3.68]
+            ],
+            "closed": true,
+            "profile": "circle",
+            "radius": 0.07,
+            "segments": 6,
+            "material": "neon_amber"
+          }
+        },
+        {
+          "kind": "light",
+          "id": "pad_light",
+          "type": "point",
+          "color": "#ffb238",
+          "intensity": 50,
+          "range": 14,
+          "xform": {
+            "pos": [0, 1.5, 0]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "id": "ship",
+      "name": "Cargo ship",
+      "support": {
+        "on": "none"
+      },
+      "xform": {
+        "pos": [22, 11.5, 19],
+        "yaw": 205
+      },
+      "behaviors": [
+        {
+          "preset": "bob",
+          "params": {
+            "amplitude_m": 0.4,
+            "period_s": 4.5
+          }
+        }
+      ],
+      "children": [
+        {
+          "kind": "asset",
+          "id": "ship_hull",
+          "asset": "cargo_ship",
+          "xform": {
+            "pos": [0, 0, 0]
+          }
+        },
+        {
+          "kind": "primitive",
+          "id": "thruster_l",
+          "shape": "cylinder",
+          "size": [1.4, 0.12, 1.4],
+          "segments": 10,
+          "material": "neon_amber",
+          "xform": {
+            "pos": [-2.6, -0.1, -3.5]
+          }
+        },
+        {
+          "kind": "primitive",
+          "id": "thruster_r",
+          "shape": "cylinder",
+          "size": [1.4, 0.12, 1.4],
+          "segments": 10,
+          "material": "neon_amber",
+          "xform": {
+            "pos": [2.6, -0.1, -3.5]
+          }
+        },
+        {
+          "kind": "light",
+          "id": "thrust_light",
+          "type": "point",
+          "color": "#ffa040",
+          "intensity": 70,
+          "range": 16,
+          "xform": {
+            "pos": [0, -1.0, -2]
+          }
+        }
+      ]
+    },
+    {
+      "kind": "generator",
+      "id": "pipe_generator",
+      "name": "Coolant pipe",
+      "generator": {
+        "gen": "sweep",
+        "points": [
+          [-3.5, 0, -8.4],
+          [-4, 0, -13],
+          [-4, 0, -17.6]
+        ],
+        "smooth": false,
+        "radius": 0.38,
+        "elevation": 1.1,
+        "conform_to_terrain": true,
+        "supports": {
+          "spacing": 3.2,
+          "shape": "box",
+          "width": 0.22
+        },
+        "material": "hull"
+      },
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "generator",
+      "id": "pipe_generator_b",
+      "name": "Fuel line",
+      "generator": {
+        "gen": "sweep",
+        "points": [
+          [-2.4, 0, -8.6],
+          [-2.6, 0, -13],
+          [-2.6, 0, -17.6]
+        ],
+        "smooth": false,
+        "radius": 0.2,
+        "elevation": 0.8,
+        "conform_to_terrain": true,
+        "material": "pipe_orange"
+      },
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "generator",
+      "id": "pipe_greenhouse",
+      "name": "Greenhouse pipe",
+      "generator": {
+        "gen": "sweep",
+        "points": [
+          [-7.6, 0, -2.6],
+          [-11, 0, -3.4],
+          [-13.4, 0, -4]
+        ],
+        "smooth": false,
+        "radius": 0.38,
+        "elevation": 1.1,
+        "conform_to_terrain": true,
+        "supports": {
+          "spacing": 3.2,
+          "shape": "box",
+          "width": 0.22
+        },
+        "material": "hull"
+      },
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "generator",
+      "id": "pipe_hangar",
+      "name": "Hangar pipe",
+      "generator": {
+        "gen": "sweep",
+        "points": [
+          [6.4, 0, -4.8],
+          [10, 0, -7.4],
+          [12.6, 0, -9.2]
+        ],
+        "smooth": false,
+        "radius": 0.38,
+        "elevation": 1.1,
+        "conform_to_terrain": true,
+        "supports": {
+          "spacing": 3.2,
+          "shape": "box",
+          "width": 0.22
+        },
+        "material": "hull"
+      },
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "generator",
+      "id": "pipe_rocket",
+      "name": "Fuel line to rocket",
+      "generator": {
+        "gen": "sweep",
+        "points": [
+          [-17, 0, -11],
+          [-22, 0, -5],
+          [-24, 0, 0.5]
+        ],
+        "radius": 0.22,
+        "elevation": 0.5,
+        "conform_to_terrain": true,
+        "material": "pipe_orange"
+      },
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "generator",
+      "id": "walkway_glow_left",
+      "generator": {
+        "gen": "sweep",
+        "path": "walkway",
+        "offset": -1.45,
+        "radius": 0.06,
+        "segments": 6,
+        "elevation": 0.1,
+        "material": "neon_cyan_soft"
+      },
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "generator",
+      "id": "walkway_glow_right",
+      "generator": {
+        "gen": "sweep",
+        "path": "walkway",
+        "offset": 1.45,
+        "radius": 0.06,
+        "segments": 6,
+        "elevation": 0.1,
+        "material": "neon_cyan_soft"
+      },
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "generator",
+      "id": "monorail_beam",
+      "name": "Monorail beam",
+      "generator": {
+        "gen": "sweep",
+        "path": "monorail_line",
+        "profile": "rect",
+        "size": [1.1, 0.7],
+        "supports": {
+          "spacing": 10,
+          "shape": "cylinder",
+          "width": 0.8,
+          "material": "hull_dark"
+        },
+        "material": "hull"
+      },
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "generator",
+      "id": "monorail_glow",
+      "generator": {
+        "gen": "sweep",
+        "path": "monorail_line",
+        "radius": 0.07,
+        "segments": 6,
+        "elevation": -0.4,
+        "material": "neon_magenta"
+      },
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "asset",
+      "id": "train_1",
+      "name": "Monorail car 1",
+      "asset": "train_front",
+      "support": {
+        "on": "none"
+      },
+      "xform": {
+        "pos": [46, 14.35, -0.0]
+      },
+      "behaviors": [
+        {
+          "preset": "follow_path",
+          "path": "monorail_line",
+          "params": {
+            "speed_m_s": 7,
+            "offset_m": -0.0,
+            "height_m": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "kind": "asset",
+      "id": "train_2",
+      "name": "Monorail car 2",
+      "asset": "train_car",
+      "support": {
+        "on": "none"
+      },
+      "xform": {
+        "pos": [46, 14.35, -4.4]
+      },
+      "behaviors": [
+        {
+          "preset": "follow_path",
+          "path": "monorail_line",
+          "params": {
+            "speed_m_s": 7,
+            "offset_m": -4.4,
+            "height_m": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "kind": "asset",
+      "id": "train_3",
+      "name": "Monorail car 3",
+      "asset": "train_car",
+      "support": {
+        "on": "none"
+      },
+      "xform": {
+        "pos": [46, 14.35, -8.8]
+      },
+      "behaviors": [
+        {
+          "preset": "follow_path",
+          "path": "monorail_line",
+          "params": {
+            "speed_m_s": 7,
+            "offset_m": -8.8,
+            "height_m": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "kind": "asset",
+      "id": "rover",
+      "asset": "rover",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [-22, 5.0, -18],
+        "yaw": 225
+      },
+      "behaviors": [
+        {
+          "preset": "follow_path",
+          "path": "rover_trail",
+          "params": {
+            "speed_m_s": 2.2
+          }
+        }
+      ]
+    },
+    {
+      "kind": "asset",
+      "id": "crew_2",
+      "asset": "astronaut_b",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [12.5, 5.0, 22],
+        "yaw": 70
+      }
+    },
+    {
+      "kind": "asset",
+      "id": "crew_3",
+      "asset": "astronaut_a",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [-38, -2.3959, -48],
+        "yaw": 200
+      }
+    },
+    {
+      "kind": "asset",
+      "id": "visitor",
+      "name": "Something watching",
+      "asset": "alien",
+      "support": {
+        "on": "terrain"
+      },
+      "xform": {
+        "pos": [-63, 0.7964, -49],
+        "yaw": 60
+      }
+    },
+    {
+      "kind": "scatter",
+      "id": "crystals",
+      "zone": "crystal_field",
+      "count": 38,
+      "min_spacing": 4.5,
+      "max_slope_deg": 34,
+      "seed": 4,
+      "items": [
+        {
+          "asset": "crystals_small",
+          "weight": 3,
+          "scale": [0.7, 1.2],
+          "materials": [
+            {
+              "slot": "crystal",
+              "material": "crystal_glow"
+            }
+          ]
+        },
+        {
+          "asset": "crystals_a",
+          "weight": 2,
+          "scale": [0.8, 1.3],
+          "materials": [
+            {
+              "slot": "crystal",
+              "material": "crystal_glow"
+            }
+          ]
+        },
+        {
+          "asset": "crystals_b",
+          "weight": 1,
+          "scale": [0.9, 1.5],
+          "materials": [
+            {
+              "slot": "crystal",
+              "material": "crystal_glow"
+            }
+          ]
+        }
+      ],
+      "avoid": ["rover_trail"],
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "scatter",
+      "id": "boulders",
+      "area": [
+        [-84, -84],
+        [84, -84],
+        [84, 84],
+        [-84, 84]
+      ],
+      "count": 70,
+      "min_spacing": 5,
+      "max_slope_deg": 30,
+      "height_range": [-3.0, 30],
+      "seed": 9,
+      "items": [
+        {
+          "asset": "boulder_a",
+          "weight": 2
+        },
+        {
+          "asset": "boulder_b",
+          "weight": 2
+        },
+        {
+          "asset": "meteor",
+          "weight": 1,
+          "scale": [0.6, 1.1]
+        },
+        {
+          "asset": "rubble",
+          "weight": 3
+        }
+      ],
+      "avoid": ["colony", "landing_zone", "crystal_field", "walkway", "rover_trail"],
+      "xform": {
+        "pos": [0, 0, 0]
+      }
+    },
+    {
+      "kind": "marker",
+      "id": "visitor_start",
+      "purpose": "spawn",
+      "xform": {
+        "pos": [6, 5, 16],
+        "yaw": 200
+      },
+      "radius": 0.5
+    },
+    {
+      "kind": "camera",
+      "id": "hero_cam",
+      "purpose": "hero",
+      "fov_deg": 60,
+      "far": 900,
+      "xform": {
+        "pos": [-16, 19, 46]
+      },
+      "look_at": [10, 10, -2]
+    },
+    {
+      "kind": "camera",
+      "id": "pad_cam",
+      "purpose": "inspection",
+      "fov_deg": 55,
+      "far": 900,
+      "xform": {
+        "pos": [13, 7.5, 34]
+      },
+      "look_at": [22, 11.5, 19]
+    },
+    {
+      "kind": "camera",
+      "id": "crystal_cam",
+      "purpose": "inspection",
+      "fov_deg": 55,
+      "far": 900,
+      "xform": {
+        "pos": [-62, 6, -70]
+      },
+      "look_at": [-20, 6, -10]
+    },
+    {
+      "kind": "camera",
+      "id": "overview_cam",
+      "purpose": "top_down",
+      "fov_deg": 50,
+      "far": 1200,
+      "xform": {
+        "pos": [70, 80, 95]
+      },
+      "look_at": [0, 0, 0]
+    }
+  ],
+  "relations": [
+    {
+      "rel": "near",
+      "id": "r_ship_over_pad",
+      "a": "ship",
+      "b": "landing_pad",
+      "max": 12,
+      "source": "prompt"
+    },
+    {
+      "rel": "clear",
+      "id": "r_landing_zone",
+      "zone": "landing_zone",
+      "source": "builder",
+      "note": "The ship needs room to land."
+    },
+    {
+      "rel": "no_overlap",
+      "id": "r_monorail_hub",
+      "a": "monorail_beam",
+      "b": "hub",
+      "source": "builder"
+    },
+    {
+      "rel": "count",
+      "id": "r_crystals",
+      "category": "crystal",
+      "min": 15,
+      "region": "crystal_field",
+      "source": "prompt"
+    }
+  ]
+}

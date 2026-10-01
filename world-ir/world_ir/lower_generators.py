@@ -28,6 +28,7 @@ from .generators import (
     GenRug,
     GenShelving,
     GenStairs,
+    GenSweep,
     GenTableSet,
     GenTree,
     GenWallRun,
@@ -37,15 +38,21 @@ from .geometry import (
     apply,
     box_aabb,
     bounds,
+    circle_profile,
     column_major,
+    dome_mesh,
     identity,
     inverse,
     mul,
+    rect_profile,
     roof_mesh,
     rock_mesh,
     rot_y,
     rot_z,
     scale,
+    simplify_line,
+    sweep_frames,
+    sweep_mesh,
     translate,
     yaw_of,
 )
@@ -117,6 +124,7 @@ class GeneratorMixin:
             GenTableSet: self._table_set,
             GenShelving: self._shelving,
             GenKitchenRun: self._kitchen_run,
+            GenSweep: self._sweep,
         }
         if isinstance(g, GenStairs):
             if g.shape == "straight":
@@ -413,7 +421,7 @@ class GeneratorMixin:
             fm = mul(m, translate(0, floor * g.floor_height, 0))
             for edge in range(len(outline)):
                 a, b = outline[edge], outline[(edge + 1) % len(outline)]
-                count = g.windows.per_floor if lengths[edge] >= longest - 1e-6 else g.windows.per_floor // 2
+                count = g.windows.per_floor if lengths[edge] >= longest * 0.98 else g.windows.per_floor // 2
                 openings = []
                 blocked = []
                 if floor == 0 and door is not None and door.wall == edge:
@@ -454,7 +462,7 @@ class GeneratorMixin:
                     cutaway=False,
                     clear_outside=True,
                 )
-        floor_material = self._preset("floor_parquet")
+        floor_material = self._material(g.floor_material, "floor_parquet")
         self._add(
             LSlab(
                 id=f"{node.id}/ground_floor", node=self._ref(node.id), role="floor", matrix=column_major(mul(m, translate(0, 0.12, 0))), visible=visible,
@@ -466,8 +474,19 @@ class GeneratorMixin:
         roof_material = (
             self._material(g.roof.material, "wood_walnut") if g.roof.material else self._color("#4a3a33", 0.9)
         )
+        if polygon and g.roof.style == "dome":
+            # A dome over the footprint's circumscribed circle, centred on its vertices' mean.
+            cx = sum(x for x, _ in outline) / len(outline)
+            cz = sum(z for _, z in outline) / len(outline)
+            r = max(math.dist((cx, cz), p) for p in outline) + g.roof.overhang
+            rise = r * math.tan(math.radians(g.roof.pitch_deg))
+            dm = mul(m, translate(cx, total, cz))
+            self._mesh(
+                node, "roof", "roof", dome_mesh(r, r, rise, 32, 10), dm, roof_material, visible, double_sided=True
+            )
+            return
         if polygon:
-            self.warnings.append(f"building '{node.id}': polygon footprints get a flat roof")
+            self.warnings.append(f"building '{node.id}': polygon footprints get a flat roof unless the roof is a dome")
             top = mul(m, translate(0, total + 0.2, 0))
             self._add(
                 LSlab(
@@ -1061,3 +1080,83 @@ class GeneratorMixin:
                     visible,
                 )
             x += mod.width
+
+    # Sweeps
+
+    def _sweep(self, node: Any, g: GenSweep, m: Mat, visible: bool) -> None:
+        if g.path is not None:
+            line = list(self.path_world.get(g.path, []))
+            closed = self.path_closed.get(g.path, False)
+            conform = self.path_conform.get(g.path, False) if g.conform_to_terrain is None else g.conform_to_terrain
+        else:
+            line = [apply(m, p) for p in polyline([tuple(p) for p in g.points or []], g.closed, g.smooth)]
+            closed = g.closed
+            conform = bool(g.conform_to_terrain)
+        if closed and len(line) > 2 and math.dist(line[0], line[-1]) < 1e-6:
+            line = line[:-1]
+        if len(line) < 2:
+            self.warnings.append(f"sweep '{node.id}': needs a path or at least two points")
+            return
+        if g.offset:
+            frames = sweep_frames(line, closed)
+            line = [(p[0] + r[0] * g.offset, p[1], p[2] + r[2] * g.offset) for p, (_, r, _) in zip(line, frames)]
+        placed = []
+        for x, y, z in line:
+            ground = self.ground_height(x, z) if conform else None
+            placed.append((x, (ground if ground is not None else y) + g.elevation, z))
+        placed = simplify_line(placed, closed)
+        if g.profile == "circle":
+            profile, half = circle_profile(g.radius, g.segments), g.radius
+        else:
+            profile, half = rect_profile(*g.size), g.size[1] / 2
+        material = self._material(g.material, "hull_grey")
+        mesh = sweep_mesh(placed, profile, closed)
+        self._mesh(node, "", "sweep", mesh, identity(), material, visible, flat=g.profile == "rect")
+        if g.supports is not None:
+            self._sweep_supports(node, g, placed, closed, half, material, m, visible)
+
+    def _sweep_supports(
+        self, node: Any, g: GenSweep, line: list, closed: bool, half: float, material: str, m: Mat, visible: bool
+    ) -> None:
+        s = g.supports
+        pts = line + [line[0]] if closed else line
+        lengths = [math.dist((a[0], a[2]), (b[0], b[2])) for a, b in zip(pts, pts[1:])]
+        total = sum(lengths)
+        base_y = apply(m, (0.0, 0.0, 0.0))[1]
+        post_material = self._material(s.material, "hull_grey") if s.material else material
+        copies = []
+        k, along, seg = 0, s.spacing / 2, 0
+        walked = 0.0
+        while along < total - 1e-6:
+            while seg < len(lengths) - 1 and walked + lengths[seg] < along:
+                walked += lengths[seg]
+                seg += 1
+            a, b = pts[seg], pts[seg + 1]
+            t = (along - walked) / (lengths[seg] or 1.0)
+            x, y, z = (a[c] + (b[c] - a[c]) * t for c in range(3))
+            yaw = yaw_of(b[0] - a[0], b[2] - a[2])
+            ground = self.ground_height(x, z)
+            ground = base_y if ground is None else ground
+            if s.asset:
+                copies.append((x, ground, z, yaw, 1.0))
+            else:
+                height = y - half - ground
+                if height > 0.05:
+                    pm = mul(translate(x, ground, z), rot_y(yaw))
+                    size = (s.width, height, s.width)
+                    self._shape(
+                        f"{node.id}/support{k}",
+                        self._ref(node.id),
+                        "support",
+                        s.shape,
+                        size,
+                        pm,
+                        post_material,
+                        visible,
+                        segments=12 if s.shape == "cylinder" else None,
+                    )
+            k += 1
+            along += s.spacing
+        if copies:
+            dims = self.world.assets[s.asset].dims
+            self._instances(node, "supports", "support", copies, visible, identity(), dims, asset=s.asset)

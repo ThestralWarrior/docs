@@ -14,8 +14,9 @@ Builder agent → World IR (agent writes nodes and relations; code fills asset a
 
 The repair model edits the World IR with actions; the result is lowered again and the viewer animates the change.
 
-- **Lowering** turns rooms into a floor, a ceiling, wall pieces cut around doors and windows, door panels, window glass and door clearance zones; evaluates terrain (seeded noise, flatten, bump, smooth, carve-path, terrace and crater edits, material layers by height, slope and zone, a water level); lays paths on the ground; expands prefabs with per-instance overrides; scatters assets with area, spacing, slope, height and avoid rules; turns 22 generators into shapes, meshes and instances (platform, building with windows, door and roof, roof, column, ramp, railing, fence, procedural tree, rock and bush, grass, flower bed, along-path, radial array, table set, shelving, kitchen run, rug, straight stairs, wall run, array); fills in material presets; and flattens nested transforms into world matrices. Water bodies, decals, text, audio, particles and a few generators (arch, bridge, road, parking lot, curtains, shelf fill, non-straight stairs) are listed in `unsupported` and skipped, while their children are still lowered.
-- **The loader** only draws what lowering produced. It normalises each GLB (front to +Z, bottom centre to the origin, fitted to the asset's `dims`), tags every object with its IR node ID, highlights nodes, animates updates between two lowered scenes, and cuts away walls between the camera and the room.
+- **Lowering** turns rooms into a floor, a ceiling, wall pieces cut around doors and windows, door panels, window glass and door clearance zones; evaluates terrain (seeded noise, flatten, bump, smooth, carve-path, terrace and crater edits, material layers by height, slope and zone, a water level); lays paths on the ground; expands prefabs with per-instance overrides; scatters assets with area, spacing, slope, height and avoid rules; turns 23 generators into shapes, meshes and instances (platform, building with windows, door and roof, roof including domes, column, ramp, railing, fence, procedural tree, rock and bush, grass, flower bed, along-path, radial array, table set, shelving, kitchen run, rug, straight stairs, wall run, array, and sweep: a profile along a path for pipes, rails, monorail beams and neon strips, with posts down to the ground); records behaviours (spin, bob, sway, flicker, follow-path) for the loader to play; fills in material presets; and flattens nested transforms into world matrices. Water bodies, decals, text, audio, particles and a few generators (arch, bridge, road, parking lot, curtains, shelf fill, non-straight stairs) are listed in `unsupported` and skipped, while their children are still lowered.
+- **The loader** only draws what lowering produced. It normalises each GLB (front to +Z, bottom centre to the origin, fitted to the asset's `dims`), tags every object with its IR node ID, highlights nodes, animates updates between two lowered scenes, and cuts away walls between the camera and the room. It also draws space skies (stars, planets with rings), adds bloom when the environment asks for it, and plays behaviours on top of each item's rest pose. `view.setTime(seconds)` freezes the animation for repeatable screenshots.
+- **Behaviours are for show.** Items in the lowered scene keep their rest pose, which is what the validators check; the animation never changes what is validated.
 - **Versions** are pinned and recorded in every lowered scene: IR version, lowering version, and the three.js version. Three.js does not follow semver (r186 removed `PCFSoftShadowMap`, for example), so upgrade only on purpose.
 
 ![Bedroom example rendered by the loader](docs/bedroom.png)
@@ -24,6 +25,12 @@ The repair model edits the World IR with actions; the result is lowered again an
 
 ![Cabin clearing example from the campsite](docs/cabin_hero.png)
 
+![Sci-fi colony: glass-domed hub, hangars, pipes, monorail loop, landing pad with a hovering ship, under a ringed gas giant](docs/scifi_hero.png)
+
+![Sci-fi colony: the crystal field, rover trail and the colony on its ridge](docs/scifi_crystals.png)
+
+![Sci-fi colony from above: plateau, monorail loop on pylons, lava valleys](docs/scifi_overview.png)
+
 **Snapping.** An agent can say an object stands on the terrain but cannot know the ground height there. `snap_to_ground` (and `scripts/snap.py`) sets the height of every terrain-supported node from the terrain, the same way code fills in asset sizes. Scatter, fences, flower beds and paths follow the ground on their own.
 
 ## What a world file can contain
@@ -31,20 +38,21 @@ The repair model edits the World IR with actions; the result is lowered again an
 | Part | Count | Examples |
 |---|---|---|
 | Node kinds | 18 | group, asset, primitive, generator, prefab, room, terrain, water, path, scatter, zone, light, camera, marker, decal, text, audio, particles |
-| Generators | 27 | stairs, ramp, roof, wall run, column, arch, fence, railing, bridge, building, platform, shelving, table set, kitchen run, shelf fill, rug, curtains, tree, rock, bush, grass, flower bed, road, along-path, parking lot, array, radial array |
+| Generators | 28 | stairs, ramp, roof, wall run, column, arch, fence, railing, bridge, building, platform, shelving, table set, kitchen run, shelf fill, rug, curtains, tree, rock, bush, grass, flower bed, road, along-path, parking lot, array, radial array, sweep |
 | Terrain | 4 height sources, 7 edits, painted layers | noise, grid, image, flat; flatten, bump, smooth, carve path, terrace, crater, erosion |
 | Relations | 46 in 7 groups | on, against wall, faces, near, around, clear, not blocking, walkway, count, requires, no overlap, max slope |
-| Environment | sky (4 types), sun, ambient, fog (2 types), tone mapping, weather, wind | |
-| Registries | assets, materials (27 presets), prefabs | |
+| Environment | sky (5 types), sun, ambient, fog (2 types), tone mapping, reflections, bloom, weather, wind | colour, gradient, procedural, HDRI, space (stars, milky way, planets, moons, rings) |
+| Behaviours | 8 presets, 5 played | spin, bob, sway, flicker, follow path; open on approach, toggle on click, look at viewer |
+| Registries | assets, materials (38 presets), prefabs | wood, metal, glass, terrain, lava, acid, ice, hull, neon |
 | Repair actions | 12 in 3 tiers | move, rotate, scale; set support, reparent, swap asset, set material, set param, add node, remove node; add or remove relation |
 
-In total the world format has 155 object types and 685 documented fields; with the lowered scene format, 169 and 765.
+In total the world format has 164 object types and 740 documented fields; with the lowered scene format, 179 and 829.
 
 Every object and field carries a tier:
 
 - **v1**: needed for the hackathon build: rooms, assets, lights, cameras, zones, the core relations and the v1 repair actions.
-- **v2**: stretch: terrain, most generators, scatter, paths, prefabs, physics.
-- **later**: designed so the format won't need to change, but not planned: water, audio, particles, decals, weather, behaviours.
+- **v2**: stretch: terrain, most generators, scatter, paths, prefabs, physics, space skies, bloom, behaviours.
+- **later**: designed so the format won't need to change, but not planned: water bodies, audio, particles, decals, weather.
 
 The world can describe much more than the repair model may change. The v1 repair model only edits `xform.pos`, `xform.yaw` and `xform.scale`.
 
@@ -61,24 +69,24 @@ The world can describe much more than the repair model may change. The v1 repair
 ```
 world_ir/        Pydantic models: the schema itself
   common.py        shared types, Transform, Support, Semantic, Physics, Provenance
-  environment.py   sky, sun, ambient, fog, weather, wind
+  environment.py   sky (including space skies), sun, ambient, fog, bloom, weather, wind
   assets.py        AssetDef, Material, material presets
   architecture.py  Opening (doors, windows), RoofSpec
   terrain.py       height sources, terrain edits, material layers
-  generators.py    the 27 parametric generators
+  generators.py    the 28 parametric generators
   nodes.py         the 18 node kinds
   relations.py     the 46 relations
   world.py         World, Brief, ValidationRules, Prefab, cross-reference checks
   actions.py       repair actions, constrained_schema(), apply_v1()
   catalogue.py     reads the models for the generated docs
   lowered.py       the lowered scene format
-  lower.py         lowering: World IR → lowered scene (rooms, terrain, paths, prefabs, scatter)
+  lower.py         lowering: World IR → lowered scene (rooms, terrain, paths, prefabs, scatter, behaviours)
   lower_generators.py  generators → shapes, meshes and instances
   terrain_eval.py  noise, terrain edits, layers, ground height
-  geometry.py      matrices, colour, roof and rock meshes
+  geometry.py      matrices, colour, roof, dome, rock and sweep meshes
   snap.py          put terrain-supported nodes on the ground
-examples/        minimal.json, bedroom.json, cabin_clearing.json
-viewer/          three.js loader (src/loader.js), demo page, lowered scenes, Kenney CC0 furniture and nature models
+examples/        minimal.json, bedroom.json, cabin_clearing.json, scifi_colony.json
+viewer/          three.js loader (src/loader.js), demo page, lowered scenes, Kenney CC0 furniture, nature and space models
 schema/          generated JSON Schemas for worlds, actions and lowered scenes
 docs/            generated REFERENCE.md and catalogue.json
 tests/           validation, cross-reference and action tests
@@ -94,7 +102,8 @@ python scripts/lower.py examples/*.json --out-dir viewer/scenes   # regenerate t
 python scripts/measure_assets.py viewer/assets/kenney/furniture --scale 1.9   # asset dims from the GLBs (needs trimesh)
 python scripts/measure_assets.py viewer/assets/kenney/nature --height tree-pinetalla=9   # or a real height per model
 python scripts/fix_glb_metalness.py viewer/assets/kenney/nature   # some kits mark leaves and fabric as metal
-python scripts/snap.py examples/cabin_clearing.json                # ground heights for terrain-supported nodes
+python scripts/fix_glb_metalness.py viewer/assets/kenney/space --metal 0.35   # and some mark every hull colour fully metallic
+python scripts/snap.py examples/scifi_colony.json                  # ground heights for terrain-supported nodes
 
 cd viewer && npm install && npm run serve                 # then open http://localhost:8000/?scene=bedroom
 ```

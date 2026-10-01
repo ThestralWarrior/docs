@@ -141,7 +141,7 @@ class ModTerrace(IRModel):
 class ModCrater(IRModel):
     """A bowl with a raised rim."""
 
-    model_config = cfg("later")
+    model_config = cfg("v2")
 
     op: Literal["crater"] = "crater"
     center: Vec2

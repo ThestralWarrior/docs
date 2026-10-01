@@ -9,6 +9,11 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Sky } from "three/addons/objects/Sky.js";
 import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUniformsLib.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
 export const PINNED_THREE = "0.186.1";
 
@@ -89,6 +94,9 @@ export class WorldView extends EventTarget {
     this.glbCache = new Map();
     this.tweens = [];
     this.warnings = [];
+    this.behaviors = [];
+    this.startTime = performance.now();
+    this.fixedTime = null;
     RectAreaLightUniformsLib.init();
     new ResizeObserver(() => this.resize()).observe(container);
     this.renderer.domElement.addEventListener("click", (e) => this.pick(e));
@@ -113,8 +121,11 @@ export class WorldView extends EventTarget {
     this.byItem = new Map();
     this.cameras = new Map();
     this.materials = new Map(Object.entries(lowered.materials).map(([id, m]) => [id, this.makeMaterial(m)]));
-    this.applyEnvironment(lowered.environment, lowered.bounds);
+    this.skyGroup = null;
+    this.applyEnvironment(lowered.environment, lowered.bounds, lowered.world_id);
     await Promise.all(lowered.items.map((item) => this.addItem(item)));
+    this.setupBehaviors(lowered.behaviors ?? []);
+    this.setupPost(lowered.environment.post);
     this.applyOptions();
     this.frameAll();
     this.dispatchEvent(new CustomEvent("loaded", { detail: { items: lowered.items.length, warnings: this.warnings } }));
@@ -135,7 +146,7 @@ export class WorldView extends EventTarget {
     return new THREE.MeshStandardMaterial(params);
   }
 
-  applyEnvironment(env, bounds) {
+  applyEnvironment(env, bounds, seedText = "") {
     const r = this.renderer;
     r.toneMapping = TONE_MAPPING[env.tone_mapping] ?? THREE.ACESFilmicToneMapping;
     r.toneMappingExposure = env.exposure;
@@ -168,6 +179,17 @@ export class WorldView extends EventTarget {
       const sun = env.sun ?? { elevation_deg: 45, azimuth_deg: 135 };
       u.sunPosition.value.copy(this.sunDirection(sun));
       this.scene.add(s);
+    } else if (sky.type === "space") {
+      this.scene.background = new THREE.Color(sky.zenith);
+      this.skyGroup = this.makeSpaceSky(sky, seedText);
+      this.scene.add(this.skyGroup);
+    }
+    this.scene.environment = null;
+    if (env.reflections === "studio") {
+      const pmrem = new THREE.PMREMGenerator(this.renderer);
+      this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      this.scene.environmentIntensity = env.reflection_intensity ?? 1;
+      pmrem.dispose();
     }
     const amb = env.ambient;
     this.scene.add(
@@ -192,6 +214,208 @@ export class WorldView extends EventTarget {
           ? new THREE.Fog(new THREE.Color(env.fog.color), env.fog.near, env.fog.far)
           : new THREE.FogExp2(new THREE.Color(env.fog.color), env.fog.density);
     }
+  }
+
+  /** Gradient dome, stars and distant bodies. It follows the camera, so it always looks infinitely far away. */
+  makeSpaceSky(sky, seedText) {
+    const group = new THREE.Group();
+    const random = seededRandom(seedText);
+    const dome = new THREE.SphereGeometry(1, 48, 24);
+    const zenith = new THREE.Color(sky.zenith);
+    const horizon = new THREE.Color(sky.horizon);
+    const colors = [];
+    for (let i = 0; i < dome.attributes.position.count; i++) {
+      const y = dome.attributes.position.getY(i);
+      const c = y < 0 ? horizon.clone().multiplyScalar(0.55) : horizon.clone().lerp(zenith, Math.pow(y, 0.45));
+      colors.push(c.r, c.g, c.b);
+    }
+    dome.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    const backdrop = new THREE.Mesh(dome, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, fog: false, depthWrite: false }));
+    backdrop.renderOrder = -3;
+    group.add(backdrop);
+
+    // Stars: many faint ones, a few bright enough to bloom, and an optional dense band.
+    const tints = [new THREE.Color("#ffffff"), new THREE.Color("#cfe0ff"), new THREE.Color("#ffe6c4"), new THREE.Color("#ffd2d2")];
+    const layers = [
+      { size: 1.3, share: 0.85, gain: 0.7 },
+      { size: 2.4, share: 0.15, gain: 2.2 },
+    ];
+    const direction = () => {
+      const u = random() * 2 - 1, a = random() * Math.PI * 2, r = Math.sqrt(1 - u * u);
+      return new THREE.Vector3(r * Math.cos(a), u, r * Math.sin(a));
+    };
+    const band = sky.milky_way
+      ? new THREE.Quaternion().setFromEuler(new THREE.Euler(THREE.MathUtils.degToRad(sky.milky_way[1]), THREE.MathUtils.degToRad(sky.milky_way[0]), 0, "YXZ"))
+      : null;
+    for (const layer of layers) {
+      const count = Math.round(sky.stars * layer.share);
+      const bandCount = band ? Math.round(count * 0.8) : 0;
+      const positions = [], starColors = [];
+      for (let i = 0; i < count + bandCount; i++) {
+        let d;
+        if (i < count) d = direction();
+        else {
+          const a = random() * Math.PI * 2;
+          const spread = (random() + random() + random() - 1.5) * 0.18;
+          d = new THREE.Vector3(Math.cos(a), spread, Math.sin(a)).normalize().applyQuaternion(band);
+        }
+        if (d.y < -0.08) continue;
+        positions.push(d.x * 0.97, d.y * 0.97, d.z * 0.97);
+        const level = sky.star_brightness * layer.gain * (0.25 + 0.75 * random() ** 3) * (i >= count ? 0.6 : 1);
+        const tint = tints[Math.floor(random() * tints.length)];
+        starColors.push(tint.r * level, tint.g * level, tint.b * level);
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute("color", new THREE.Float32BufferAttribute(starColors, 3));
+      const points = new THREE.Points(geometry, new THREE.PointsMaterial({ size: layer.size, sizeAttenuation: false, vertexColors: true, fog: false, depthWrite: false }));
+      points.renderOrder = -2;
+      group.add(points);
+    }
+
+    for (const body of sky.bodies ?? []) group.add(this.makeBody(body, random));
+    group.traverse((o) => (o.frustumCulled = false));
+    return group;
+  }
+
+  makeBody(body, random) {
+    const distance = 0.9;
+    const radius = distance * Math.tan(THREE.MathUtils.degToRad(body.angular_size_deg / 2));
+    const holder = new THREE.Group();
+    holder.position.copy(this.sunDirection(body)).multiplyScalar(distance);
+    holder.lookAt(0, 0, 0);
+    const texture = bodyTexture(body, random);
+    const material =
+      body.style === "star"
+        ? new THREE.MeshBasicMaterial({ color: new THREE.Color(body.color).multiplyScalar(Math.max(1, body.glow)), fog: false })
+        : new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            map: texture,
+            roughness: 1,
+            metalness: 0,
+            fog: false,
+            emissive: new THREE.Color(body.color),
+            emissiveIntensity: body.glow,
+          });
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(radius, 64, 32), material);
+    sphere.rotation.set(0.35, 0, 0.25);
+    sphere.renderOrder = -1;
+    holder.add(sphere);
+    if (body.ring) {
+      const r = body.ring;
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(radius * r.inner, radius * r.outer, 128, 1),
+        new THREE.MeshBasicMaterial({ color: new THREE.Color(r.color).multiplyScalar(0.6), side: THREE.DoubleSide, transparent: true, opacity: r.opacity, fog: false, depthWrite: false }),
+      );
+      ring.rotation.x = -THREE.MathUtils.degToRad(90 - r.tilt_deg); // near side of the ring below the body
+      ring.renderOrder = -1;
+      holder.add(ring);
+    }
+    return holder;
+  }
+
+  setupPost(post) {
+    this.composer?.dispose();
+    this.composer = null;
+    const bloom = post?.bloom;
+    if (!bloom) return;
+    const size = this.renderer.getSize(new THREE.Vector2());
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.setPixelRatio(this.renderer.getPixelRatio());
+    this.composer.setSize(size.x, size.y);
+    this.renderPass = new RenderPass(this.scene, this.camera);
+    this.composer.addPass(this.renderPass);
+    this.composer.addPass(new UnrealBloomPass(size, bloom.strength, bloom.radius, bloom.threshold));
+    this.composer.addPass(new OutputPass());
+  }
+
+  // Behaviours ------------------------------------------------------------------
+
+  /** Animations from lowering. Items keep their rest matrix; each frame applies the behaviours on top of it. */
+  setupBehaviors(list) {
+    this.behaviors = [];
+    for (const b of list) {
+      const objects = b.items.map((id) => this.byItem.get(id)).filter(Boolean);
+      if (!objects.length) continue;
+      for (const o of objects) o.userData.rest ??= new THREE.Matrix4().compose(o.position, o.quaternion, o.scale);
+      const origin = new THREE.Matrix4().fromArray(b.origin);
+      const entry = { ...b, objects, origin, originInverse: origin.clone().invert(), pivot: new THREE.Vector3().setFromMatrixPosition(origin) };
+      if (b.preset === "follow_path") {
+        const points = b.path.map((p) => new THREE.Vector3(...p));
+        if (b.closed) points.push(points[0].clone());
+        const lengths = [0];
+        for (let i = 1; i < points.length; i++) lengths.push(lengths[i - 1] + points[i].distanceTo(points[i - 1]));
+        Object.assign(entry, { points, lengths, total: lengths[lengths.length - 1] });
+      }
+      if (b.preset === "flicker") entry.base = objects.map((o) => (o.isLight ? o.intensity : 0));
+      this.behaviors.push(entry);
+    }
+  }
+
+  /** Seconds since load, or the time set with setTime() for repeatable screenshots. */
+  time() {
+    return this.fixedTime ?? (performance.now() - this.startTime) / 1000;
+  }
+
+  setTime(seconds) {
+    this.fixedTime = seconds;
+  }
+
+  animate(t) {
+    const combined = new Map();
+    for (const b of this.behaviors) {
+      if (b.preset === "flicker") {
+        const amount = b.params.amount ?? 0.3, speed = b.params.speed ?? 8;
+        b.objects.forEach((o, i) => {
+          if (!o.isLight) return;
+          const wobble = 0.5 + 0.25 * Math.sin(t * speed + i * 1.7) + 0.25 * Math.sin(t * speed * 2.3 + i * 4.1);
+          o.intensity = b.base[i] * (1 - amount * wobble);
+        });
+        continue;
+      }
+      const d = this.behaviorMatrix(b, t);
+      for (const o of b.objects) combined.set(o, d.clone().multiply(combined.get(o) ?? new THREE.Matrix4()));
+    }
+    for (const [o, d] of combined) d.multiply(o.userData.rest).decompose(o.position, o.quaternion, o.scale);
+  }
+
+  behaviorMatrix(b, t) {
+    const p = b.params;
+    const about = (axisName, degrees) => {
+      const local = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] }[axisName] ?? [0, 1, 0];
+      const axis = new THREE.Vector3(...local).transformDirection(b.origin);
+      return new THREE.Matrix4()
+        .makeTranslation(b.pivot.x, b.pivot.y, b.pivot.z)
+        .multiply(new THREE.Matrix4().makeRotationAxis(axis, THREE.MathUtils.degToRad(degrees)))
+        .multiply(new THREE.Matrix4().makeTranslation(-b.pivot.x, -b.pivot.y, -b.pivot.z));
+    };
+    const wave = (period, phase = 0) => Math.sin((2 * Math.PI * t) / Math.max(period, 0.05) + phase * 2 * Math.PI);
+    if (b.preset === "spin") return about(p.axis ?? "y", (p.speed_deg_s ?? 30) * t);
+    if (b.preset === "sway") return about(p.axis ?? "z", (p.angle_deg ?? 4) * wave(p.period_s ?? 4, p.phase ?? 0));
+    if (b.preset === "bob") return new THREE.Matrix4().makeTranslation(0, (p.amplitude_m ?? 0.25) * wave(p.period_s ?? 3, p.phase ?? 0), 0);
+    if (b.preset === "follow_path") {
+      let s = (p.offset_m ?? 0) + (p.speed_m_s ?? 2) * t;
+      let ahead = 1;
+      if (b.closed) s = ((s % b.total) + b.total) % b.total;
+      else {
+        s = ((s % (2 * b.total)) + 2 * b.total) % (2 * b.total);
+        if (s > b.total) (s = 2 * b.total - s), (ahead = -1);
+      }
+      const here = this.pointAt(b, s);
+      const next = this.pointAt(b, b.closed ? (s + ahead * 0.5 + b.total) % b.total : THREE.MathUtils.clamp(s + ahead * 0.5, 0, b.total));
+      if (next.distanceTo(here) < 1e-6) return new THREE.Matrix4();
+      const pose = new THREE.Matrix4().lookAt(next, here, new THREE.Vector3(0, 1, 0)).setPosition(here);
+      return pose.multiply(b.originInverse);
+    }
+    return new THREE.Matrix4();
+  }
+
+  pointAt(b, s) {
+    const { points, lengths } = b;
+    let i = 1;
+    while (i < lengths.length - 1 && lengths[i] < s) i++;
+    const span = lengths[i] - lengths[i - 1] || 1;
+    return points[i - 1].clone().lerp(points[i], (s - lengths[i - 1]) / span);
   }
 
   sunDirection({ elevation_deg, azimuth_deg }) {
@@ -320,7 +544,7 @@ export class WorldView extends EventTarget {
     );
     const parts = [];
     if (item.asset) {
-      const template = await this.makeAsset({ asset: item.asset, materials: {} });
+      const template = await this.makeAsset({ asset: item.asset, materials: item.materials ?? {} });
       template.updateMatrixWorld(true);
       template.traverse((o) => o.isMesh && parts.push({ geometry: o.geometry, material: o.material, local: o.matrixWorld.clone() }));
     } else {
@@ -433,6 +657,7 @@ export class WorldView extends EventTarget {
     const structural = [...after.keys()].some((id) => !before.has(id)) || [...before.keys()].some((id) => !after.has(id));
     if (structural) return this.load(lowered);
     this.lowered = lowered;
+    for (const b of this.behaviors) for (const o of b.objects) o.userData.rest = new THREE.Matrix4().fromArray(after.get(o.userData.item).matrix);
     for (const [id, item] of after) {
       const old = before.get(id);
       if (!old || old.matrix.every((v, i) => Math.abs(v - item.matrix[i]) < 1e-6)) continue;
@@ -556,8 +781,18 @@ export class WorldView extends EventTarget {
       if (live) box.position.copy(live.position), box.quaternion.copy(live.quaternion);
     }
     if (this.controls.enabled) this.controls.update();
+    if (this.behaviors.length) this.animate(this.time());
     this.cutaway();
-    this.renderer.render(this.scene, this.camera);
+    if (this.skyGroup) {
+      this.skyGroup.position.copy(this.camera.position);
+      this.skyGroup.scale.setScalar(this.camera.far * 0.9);
+    }
+    if (this.composer) {
+      this.renderPass.camera = this.camera;
+      this.composer.render();
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
   }
 
   cutaway() {
@@ -580,6 +815,7 @@ export class WorldView extends EventTarget {
     const w = this.container.clientWidth;
     const h = Math.max(1, this.container.clientHeight);
     this.renderer.setSize(w, h);
+    this.composer?.setSize(w, h);
     this.orbitCamera.aspect = w / h;
     this.orbitCamera.updateProjectionMatrix();
     if (this.camera.isPerspectiveCamera && this.camera !== this.orbitCamera) {
@@ -600,6 +836,47 @@ function toArrayBuffer(data) {
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   return bytes.buffer;
+}
+
+/** A repeatable random sequence from a string, so a world's stars are the same on every load. */
+function seededRandom(text) {
+  let h = 2166136261;
+  for (const ch of text) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  return () => {
+    h = (h + 0x6d2b79f5) | 0;
+    let t = Math.imul(h ^ (h >>> 15), 1 | h);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Surface texture for a planet or moon: bands for gas giants, spots for rocky bodies. */
+function bodyTexture(body, random) {
+  const canvas = Object.assign(document.createElement("canvas"), { width: 256, height: 128 });
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = body.color;
+  ctx.fillRect(0, 0, 256, 128);
+  if (body.style === "gas" || body.style === "ice") {
+    ctx.fillStyle = body.band_color ?? "#ffffff";
+    for (let y = 0; y < 128; ) {
+      const h = 2 + random() * (body.style === "gas" ? 9 : 4);
+      ctx.globalAlpha = 0.25 + random() * 0.5;
+      ctx.fillRect(0, y, 256, h);
+      y += h + 2 + random() * 10;
+    }
+  } else if (body.style === "rocky") {
+    for (let i = 0; i < 60; i++) {
+      ctx.globalAlpha = 0.15 + random() * 0.25;
+      ctx.fillStyle = random() < 0.5 ? "#000000" : "#ffffff";
+      ctx.beginPath();
+      ctx.arc(random() * 256, 10 + random() * 108, 2 + random() * 12, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
 }
 
 function isShown(object) {

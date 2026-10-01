@@ -6,7 +6,12 @@ Some converted low-poly kits store metallicFactor 1 on every material (glTF's
 default when the field is missing is also 1). Leaves, grass and fabric then
 render black unless the scene has an environment map. This rewrites the GLB's
 JSON chunk in place and leaves the binary chunk untouched. Materials whose name
-contains 'metal' are kept as they are.
+contains 'metal' are kept as they are, unless --metal gives them a new value:
+
+    python scripts/fix_glb_metalness.py viewer/assets/kenney/space --metal 0.35
+
+Kenney's Space Kit marks its hull colours as fully metallic and fully rough, which
+reads as dark grey under direct light alone; 0.35 keeps a hint of metal.
 """
 
 import argparse
@@ -15,7 +20,7 @@ import pathlib
 import struct
 
 
-def fix(path: pathlib.Path) -> list[str]:
+def fix(path: pathlib.Path, metal: float | None = None) -> list[str]:
     data = path.read_bytes()
     magic, version, _ = struct.unpack("<4sII", data[:12])
     if magic != b"glTF":
@@ -29,10 +34,11 @@ def fix(path: pathlib.Path) -> list[str]:
     for material in doc.get("materials", []):
         name = material.get("name", "")
         pbr = material.setdefault("pbrMetallicRoughness", {})
-        if "metal" in name.lower() or "metallicRoughnessTexture" in pbr:
+        if "metallicRoughnessTexture" in pbr:
             continue
-        if pbr.get("metallicFactor", 1.0) > 0:
-            pbr["metallicFactor"] = 0.0
+        target = metal if "metal" in name.lower() else 0.0
+        if target is not None and pbr.get("metallicFactor", 1.0) > target:
+            pbr["metallicFactor"] = target
             changed.append(name)
     if not changed:
         return []
@@ -47,9 +53,10 @@ def fix(path: pathlib.Path) -> list[str]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("folder", type=pathlib.Path)
+    parser.add_argument("--metal", type=float, default=None, help="New metallicFactor for materials named 'metal'.")
     args = parser.parse_args()
     for path in sorted(args.folder.glob("*.glb")):
-        changed = fix(path)
+        changed = fix(path, args.metal)
         if changed:
             print(f"{path.name}: {', '.join(changed)}")
 

@@ -11,7 +11,7 @@ from pydantic_core import PydanticUndefined
 
 from . import architecture, assets, common, environment, lowered, terrain, world
 from .actions import ACTIONS_BY_TIER
-from .generators import GENERATOR_GROUPS
+from .generators import GENERATOR_GROUPS, KitchenModule, SweepSupports, WindowGrid
 from .nodes import NODE_KINDS, NodeBase, NodePatch, ScatterItem, WallOverride
 from .relations import RELATION_GROUPS, RelationBase
 from .vocab import ARCHETYPES, BIOMES, FUNCTIONS, ROOM_TYPES, STYLE_TAGS
@@ -210,10 +210,15 @@ def build() -> dict[str, Any]:
                         environment.SkyGradient,
                         environment.SkyProcedural,
                         environment.SkyHdri,
+                        environment.SkySpace,
+                        environment.CelestialBody,
+                        environment.PlanetRing,
                         environment.Sun,
                         environment.Ambient,
                         environment.FogLinear,
                         environment.FogExp2,
+                        environment.PostEffects,
+                        environment.Bloom,
                         environment.Weather,
                         environment.Wind,
                     )
@@ -276,6 +281,12 @@ def build() -> dict[str, Any]:
                 "groups": [
                     {"title": group, "models": [describe(m) for m in models]}
                     for group, models in GENERATOR_GROUPS.items()
+                ]
+                + [
+                    {
+                        "title": "Parts used by generators",
+                        "models": [describe(m) for m in (WindowGrid, KitchenModule, SweepSupports)],
+                    }
                 ],
             },
             {
@@ -314,7 +325,7 @@ def build() -> dict[str, Any]:
                         lowered.LZone,
                     )
                 ]
-                + [describe(m) for m in (lowered.LAsset, lowered.LMaterial, lowered.Unsupported)],
+                + [describe(m) for m in (lowered.LAsset, lowered.LMaterial, lowered.LBehavior, lowered.Unsupported)],
             },
             {
                 "id": "actions",

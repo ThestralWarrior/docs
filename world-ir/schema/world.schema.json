@@ -343,12 +343,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -648,12 +649,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -802,7 +804,7 @@
     },
     "Behavior": {
       "additionalProperties": false,
-      "description": "A preset behaviour with parameters. Never free-form code.",
+      "description": "A preset behaviour with parameters. Never free-form code.\n\nThe viewer plays spin (speed_deg_s, axis), bob (amplitude_m, period_s, phase),\nsway (angle_deg, period_s, axis), flicker (amount, speed; lights only) and\nfollow_path (speed_m_s, offset_m, height_m). The rest are not played yet.\nA behaviour moves the node and everything under it.",
       "properties": {
         "preset": {
           "enum": [
@@ -858,7 +860,38 @@
       ],
       "title": "Behavior",
       "type": "object",
-      "x-tier": "later"
+      "x-tier": "v2"
+    },
+    "Bloom": {
+      "additionalProperties": false,
+      "description": "Glow around bright pixels: emissive materials, lamps, lava, stars.",
+      "properties": {
+        "strength": {
+          "default": 0.8,
+          "maximum": 3,
+          "minimum": 0,
+          "title": "Strength",
+          "type": "number"
+        },
+        "radius": {
+          "default": 0.4,
+          "description": "How far the glow spreads.",
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Radius",
+          "type": "number"
+        },
+        "threshold": {
+          "default": 0.9,
+          "description": "Brightness above which pixels glow, before tone mapping.",
+          "minimum": 0,
+          "title": "Threshold",
+          "type": "number"
+        }
+      },
+      "title": "Bloom",
+      "type": "object",
+      "x-tier": "v2"
     },
     "Brief": {
       "additionalProperties": false,
@@ -1071,12 +1104,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -1273,6 +1307,103 @@
       "type": "object",
       "x-tier": "v1"
     },
+    "CelestialBody": {
+      "additionalProperties": false,
+      "description": "A planet, moon or star drawn far away on the sky. Lit by the sun, so it shows a phase.",
+      "properties": {
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "azimuth_deg": {
+          "description": "Compass direction; 0 is +Z, 90 is +X, like the sun.",
+          "title": "Azimuth Deg",
+          "type": "number"
+        },
+        "elevation_deg": {
+          "description": "Angle above the horizon.",
+          "maximum": 90,
+          "minimum": -10,
+          "title": "Elevation Deg",
+          "type": "number"
+        },
+        "angular_size_deg": {
+          "default": 8.0,
+          "description": "Apparent diameter. The real Moon is about 0.5.",
+          "exclusiveMinimum": 0,
+          "maximum": 90,
+          "title": "Angular Size Deg",
+          "type": "number"
+        },
+        "style": {
+          "default": "rocky",
+          "description": "'star' glows instead of being lit.",
+          "enum": [
+            "rocky",
+            "gas",
+            "ice",
+            "star"
+          ],
+          "title": "Style",
+          "type": "string"
+        },
+        "color": {
+          "default": "#b9b2a7",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "band_color": {
+          "anyOf": [
+            {
+              "description": "sRGB hex colour, #rrggbb.",
+              "pattern": "^#[0-9a-fA-F]{6}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Gas giants: colour of the alternating bands.",
+          "title": "Band Color"
+        },
+        "ring": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PlanetRing"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "glow": {
+          "default": 0.0,
+          "description": "Emissive strength; above about 1 it blooms.",
+          "minimum": 0,
+          "title": "Glow",
+          "type": "number"
+        }
+      },
+      "required": [
+        "azimuth_deg",
+        "elevation_deg"
+      ],
+      "title": "CelestialBody",
+      "type": "object",
+      "x-tier": "v2"
+    },
     "Circle": {
       "additionalProperties": false,
       "description": "A circular area on the ground.",
@@ -1385,12 +1516,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -1556,7 +1688,8 @@
               "color": "#/$defs/SkyColor",
               "gradient": "#/$defs/SkyGradient",
               "hdri": "#/$defs/SkyHdri",
-              "procedural": "#/$defs/SkyProcedural"
+              "procedural": "#/$defs/SkyProcedural",
+              "space": "#/$defs/SkySpace"
             },
             "propertyName": "type"
           },
@@ -1572,6 +1705,9 @@
             },
             {
               "$ref": "#/$defs/SkyHdri"
+            },
+            {
+              "$ref": "#/$defs/SkySpace"
             }
           ],
           "title": "Sky"
@@ -1650,6 +1786,36 @@
           "exclusiveMinimum": 0,
           "title": "Exposure",
           "type": "number"
+        },
+        "reflections": {
+          "default": "none",
+          "description": "Image-based light for reflections. Without it, fully metallic materials look nearly black.",
+          "enum": [
+            "none",
+            "studio"
+          ],
+          "title": "Reflections",
+          "type": "string",
+          "x-tier": "v2"
+        },
+        "reflection_intensity": {
+          "default": 1.0,
+          "minimum": 0,
+          "title": "Reflection Intensity",
+          "type": "number",
+          "x-tier": "v2"
+        },
+        "post": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PostEffects"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "x-tier": "v2"
         },
         "gravity_m_s2": {
           "default": -9.81,
@@ -2172,6 +2338,21 @@
           ],
           "default": null,
           "title": "Trim Material",
+          "x-ref": "material"
+        },
+        "floor_material": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Floor Material",
           "x-ref": "material"
         },
         "interior": {
@@ -3538,6 +3719,171 @@
       "type": "object",
       "x-tier": "v1"
     },
+    "GenSweep": {
+      "additionalProperties": false,
+      "description": "A cross-section swept along a line: pipes, cables, rails, monorail beams, neon tubes, conduits.\n\nThe line runs through the centre of the profile. Give a path node or points in the\nnode's own space. With conform_to_terrain the line keeps `elevation` metres above\nthe ground; otherwise it keeps the line's own heights plus `elevation`.",
+      "properties": {
+        "gen": {
+          "const": "sweep",
+          "default": "sweep",
+          "title": "Gen",
+          "type": "string"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path",
+          "x-ref": "path"
+        },
+        "points": {
+          "anyOf": [
+            {
+              "items": {
+                "maxItems": 3,
+                "minItems": 3,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "[x, y, z] points, used when no path is given.",
+          "title": "Points"
+        },
+        "closed": {
+          "default": false,
+          "description": "Points only: join the end back to the start.",
+          "title": "Closed",
+          "type": "boolean"
+        },
+        "smooth": {
+          "default": true,
+          "description": "Points only: curve through the points.",
+          "title": "Smooth",
+          "type": "boolean"
+        },
+        "profile": {
+          "default": "circle",
+          "enum": [
+            "circle",
+            "rect"
+          ],
+          "title": "Profile",
+          "type": "string"
+        },
+        "radius": {
+          "default": 0.15,
+          "description": "Circle profile radius.",
+          "exclusiveMinimum": 0,
+          "title": "Radius",
+          "type": "number"
+        },
+        "size": {
+          "default": [
+            0.4,
+            0.3
+          ],
+          "description": "Rect profile [width, height].",
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Size",
+          "type": "array"
+        },
+        "segments": {
+          "default": 12,
+          "description": "Facets around a circle profile.",
+          "maximum": 64,
+          "minimum": 3,
+          "title": "Segments",
+          "type": "integer"
+        },
+        "elevation": {
+          "default": 0.0,
+          "description": "Height of the line above the ground or above its points.",
+          "title": "Elevation",
+          "type": "number"
+        },
+        "offset": {
+          "default": 0.0,
+          "description": "Sideways shift from the line; positive is to the right of travel.",
+          "title": "Offset",
+          "type": "number"
+        },
+        "conform_to_terrain": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Follow the ground. Empty means: as the path does, or no for points.",
+          "title": "Conform To Terrain"
+        },
+        "supports": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SweepSupports"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "material": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material",
+          "x-ref": "material"
+        }
+      },
+      "title": "GenSweep",
+      "type": "object",
+      "x-tier": "v2"
+    },
     "GenTableSet": {
       "additionalProperties": false,
       "description": "A table with chairs placed around it, all facing it.",
@@ -3840,12 +4186,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -3982,6 +4329,7 @@
               "shelf_fill": "#/$defs/GenShelfFill",
               "shelving": "#/$defs/GenShelving",
               "stairs": "#/$defs/GenStairs",
+              "sweep": "#/$defs/GenSweep",
               "table_set": "#/$defs/GenTableSet",
               "tree": "#/$defs/GenTree",
               "wall_run": "#/$defs/GenWallRun"
@@ -4069,6 +4417,9 @@
             },
             {
               "$ref": "#/$defs/GenRadialArray"
+            },
+            {
+              "$ref": "#/$defs/GenSweep"
             }
           ],
           "title": "Generator"
@@ -4162,12 +4513,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -4750,12 +5102,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -5073,12 +5426,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -5530,7 +5884,7 @@
       ],
       "title": "ModCrater",
       "type": "object",
-      "x-tier": "later"
+      "x-tier": "v2"
     },
     "ModErosion": {
       "additionalProperties": false,
@@ -6044,12 +6398,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -6292,12 +6647,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -6589,6 +6945,71 @@
       "type": "object",
       "x-tier": "v1"
     },
+    "PlanetRing": {
+      "additionalProperties": false,
+      "description": "A flat ring around a celestial body, sized relative to the body's radius.",
+      "properties": {
+        "inner": {
+          "default": 1.4,
+          "description": "Inner edge, in body radii.",
+          "exclusiveMinimum": 1,
+          "title": "Inner",
+          "type": "number"
+        },
+        "outer": {
+          "default": 2.3,
+          "description": "Outer edge, in body radii.",
+          "exclusiveMinimum": 1,
+          "title": "Outer",
+          "type": "number"
+        },
+        "tilt_deg": {
+          "default": 20.0,
+          "description": "Tilt of the ring plane from edge-on.",
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Tilt Deg",
+          "type": "number"
+        },
+        "color": {
+          "default": "#d8c7a6",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Color",
+          "type": "string"
+        },
+        "opacity": {
+          "default": 0.75,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Opacity",
+          "type": "number"
+        }
+      },
+      "title": "PlanetRing",
+      "type": "object",
+      "x-tier": "v2"
+    },
+    "PostEffects": {
+      "additionalProperties": false,
+      "description": "Screen effects applied after rendering.",
+      "properties": {
+        "bloom": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Bloom"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "PostEffects",
+      "type": "object",
+      "x-tier": "v2"
+    },
     "Prefab": {
       "additionalProperties": false,
       "description": "A saved group of nodes, placed many times with PrefabNode: a dining set, a bunk bed.",
@@ -6799,12 +7220,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -7018,12 +7440,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -11990,12 +12413,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -12273,6 +12697,14 @@
           ],
           "title": "Yaw",
           "type": "array"
+        },
+        "materials": {
+          "description": "Material overrides for every copy, as on asset nodes.",
+          "items": {
+            "$ref": "#/$defs/MaterialSlotOverride"
+          },
+          "title": "Materials",
+          "type": "array"
         }
       },
       "required": [
@@ -12362,12 +12794,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -12832,6 +13265,80 @@
       "type": "object",
       "x-tier": "v2"
     },
+    "SkySpace": {
+      "additionalProperties": false,
+      "description": "A night or airless sky: a dark gradient, a starfield and distant planets and moons.",
+      "properties": {
+        "type": {
+          "const": "space",
+          "default": "space",
+          "title": "Type",
+          "type": "string"
+        },
+        "zenith": {
+          "default": "#04050c",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Zenith",
+          "type": "string"
+        },
+        "horizon": {
+          "default": "#1d1830",
+          "description": "sRGB hex colour, #rrggbb.",
+          "pattern": "^#[0-9a-fA-F]{6}$",
+          "title": "Horizon",
+          "type": "string"
+        },
+        "stars": {
+          "default": 4000,
+          "description": "Number of stars.",
+          "maximum": 50000,
+          "minimum": 0,
+          "title": "Stars",
+          "type": "integer"
+        },
+        "star_brightness": {
+          "default": 1.0,
+          "maximum": 4,
+          "minimum": 0,
+          "title": "Star Brightness",
+          "type": "number"
+        },
+        "milky_way": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "[azimuth_deg, tilt_deg] of a dense band of stars across the sky, or empty for none.",
+          "title": "Milky Way"
+        },
+        "bodies": {
+          "items": {
+            "$ref": "#/$defs/CelestialBody"
+          },
+          "title": "Bodies",
+          "type": "array"
+        }
+      },
+      "title": "SkySpace",
+      "type": "object",
+      "x-tier": "v2"
+    },
     "Sun": {
       "additionalProperties": false,
       "description": "The main directional light for exteriors.",
@@ -12970,6 +13477,68 @@
       "type": "object",
       "x-tier": "v1"
     },
+    "SweepSupports": {
+      "additionalProperties": false,
+      "description": "Posts under a sweep, from its underside down to the ground.",
+      "properties": {
+        "spacing": {
+          "default": 6.0,
+          "description": "Distance between posts along the line.",
+          "exclusiveMinimum": 0.5,
+          "title": "Spacing",
+          "type": "number"
+        },
+        "shape": {
+          "default": "cylinder",
+          "enum": [
+            "box",
+            "cylinder"
+          ],
+          "title": "Shape",
+          "type": "string"
+        },
+        "width": {
+          "default": 0.3,
+          "exclusiveMinimum": 0,
+          "title": "Width",
+          "type": "number"
+        },
+        "asset": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Place this asset on the ground instead of a post; it is not stretched.",
+          "title": "Asset",
+          "x-ref": "asset"
+        },
+        "material": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Material",
+          "x-ref": "material"
+        }
+      },
+      "title": "SweepSupports",
+      "type": "object",
+      "x-tier": "v2"
+    },
     "TerrainLayer": {
       "additionalProperties": false,
       "description": "A material painted onto the terrain by rules. Later layers paint over earlier ones.",
@@ -13072,12 +13641,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -13299,6 +13869,22 @@
           "description": "Fills everything below this height with water.",
           "title": "Water Level"
         },
+        "water_material": {
+          "anyOf": [
+            {
+              "description": "Lowercase slug, unique within the world file.",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "What fills it: water by default, or e.g. the 'lava' or 'acid' preset.",
+          "title": "Water Material",
+          "x-ref": "material"
+        },
         "holes": {
           "description": "Areas with no ground, e.g. cave mouths.",
           "items": {
@@ -13417,12 +14003,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -14052,12 +14639,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [
@@ -14431,12 +15019,13 @@
           "x-tier": "v2"
         },
         "behaviors": {
+          "description": "Animation presets the viewer plays. Validators check the rest pose, where the node is placed.",
           "items": {
             "$ref": "#/$defs/Behavior"
           },
           "title": "Behaviors",
           "type": "array",
-          "x-tier": "later"
+          "x-tier": "v2"
         },
         "source": {
           "anyOf": [

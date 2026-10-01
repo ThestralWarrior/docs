@@ -179,12 +179,22 @@ def _flatten(vertices: list[Vec3]) -> list[float]:
 def roof_mesh(style: str, w: float, d: float, pitch_deg: float, overhang: float) -> tuple[Mesh, str]:
     """A closed roof solid over a w × d footprint, ridge along z. Its base is the top of the walls (y = 0).
 
-    Returns the mesh and the style actually built; styles without a builder fall back to gable.
+    A dome is a flat deck with a dome on the footprint's inscribed ellipse; pitch_deg sets its
+    height (45 gives a hemisphere). Returns the mesh and the style actually built; styles without a builder fall back to gable.
     """
-    built = style if style in ("flat", "shed", "gable", "hip", "pyramid") else "gable"
+    built = style if style in ("flat", "shed", "gable", "hip", "pyramid", "dome") else "gable"
     t = math.tan(math.radians(pitch_deg))
     hw, hd = w / 2 + overhang, d / 2 + overhang
     drop = -overhang * t  # eaves sit below the wall tops when the roof overhangs
+    if built == "dome":
+        # A flat deck over the footprint with a dome on its inscribed ellipse; pitch 45 is a hemisphere.
+        deck = 0.25
+        positions, indices = roof_mesh("flat", w, d, 0.0, overhang)[0]
+        rx, rz = w / 2, d / 2
+        dome_p, dome_i = dome_mesh(rx, rz, min(rx, rz) * t)
+        offset = len(positions) // 3
+        positions = positions + [c + deck if k % 3 == 1 else c for k, c in enumerate(dome_p)]
+        return (positions, indices + [i + offset for i in dome_i]), built
     if built == "flat":
         top = 0.25
         v = [
@@ -325,3 +335,110 @@ def triangle_prism(points: list[tuple[float, float]], depth: float) -> Mesh:
         j = (i + 1) % n
         f += [(i, j, n + j), (i, n + j, n + i)]
     return _flatten(v), [i for tri in f for i in tri]
+
+
+def dome_mesh(rx: float, rz: float, height: float, segments: int = 24, rings: int = 8) -> Mesh:
+    """A closed half-ellipsoid on y = 0: radii rx and rz, top at y = height."""
+    v: list[Vec3] = [(0.0, height, 0.0)]
+    for j in range(1, rings + 1):
+        phi = (math.pi / 2) * j / rings
+        for i in range(segments):
+            theta = math.tau * i / segments
+            v.append(
+                (rx * math.sin(phi) * math.sin(theta), height * math.cos(phi), rz * math.sin(phi) * math.cos(theta))
+            )
+    ring = lambda j, i: 1 + (j - 1) * segments + i % segments  # noqa: E731
+    f: list[tuple[int, int, int]] = [(0, ring(1, i), ring(1, i + 1)) for i in range(segments)]
+    for j in range(1, rings):
+        for i in range(segments):
+            a, b, c, d = ring(j, i), ring(j, i + 1), ring(j + 1, i), ring(j + 1, i + 1)
+            f += [(a, c, d), (a, d, b)]
+    v.append((0.0, 0.0, 0.0))
+    centre = len(v) - 1
+    f += [(centre, ring(rings, i + 1), ring(rings, i)) for i in range(segments)]
+    return _flatten(v), [i for tri in f for i in tri]
+
+
+def sweep_frames(points: list[Vec3], closed: bool) -> list[tuple[Vec3, Vec3, Vec3]]:
+    """Tangent, right and up at each point of a line, keeping up close to +Y."""
+    n = len(points)
+    frames = []
+    right_prev: Vec3 = (1.0, 0.0, 0.0)
+    for i in range(n):
+        if closed:
+            a, b = points[(i - 1) % n], points[(i + 1) % n]
+        else:
+            a, b = points[max(0, i - 1)], points[min(n - 1, i + 1)]
+        t = tuple(b[k] - a[k] for k in range(3))
+        length = math.sqrt(sum(c * c for c in t)) or 1.0
+        t = tuple(c / length for c in t)
+        r = (-t[2], 0.0, t[0])  # t × +Y
+        rl = math.hypot(r[0], r[2])
+        r = (r[0] / rl, 0.0, r[2] / rl) if rl > 1e-6 else right_prev
+        right_prev = r
+        up = (r[1] * t[2] - r[2] * t[1], r[2] * t[0] - r[0] * t[2], r[0] * t[1] - r[1] * t[0])
+        frames.append((t, r, up))
+    return frames
+
+
+def simplify_line(points: list[Vec3], closed: bool, max_turn_deg: float = 3.0, max_length: float = 6.0) -> list[Vec3]:
+    """Drops points where the line runs nearly straight, keeping turns, ends and at most max_length gaps."""
+    if len(points) < 3:
+        return list(points)
+    kept = [points[0]]
+    limit = math.cos(math.radians(max_turn_deg))
+    for i in range(1, len(points) - 1):
+        a, b = kept[-1], points[i + 1]
+        d1 = [points[i][c] - a[c] for c in range(3)]
+        d2 = [b[c] - points[i][c] for c in range(3)]
+        n1, n2 = math.sqrt(sum(v * v for v in d1)), math.sqrt(sum(v * v for v in d2))
+        if n1 < 1e-9 or n2 < 1e-9:
+            continue
+        turn = sum(d1[c] * d2[c] for c in range(3)) / (n1 * n2)
+        if turn < limit or n1 + n2 > max_length:
+            kept.append(points[i])
+    if not closed:
+        kept.append(points[-1])
+    elif math.dist(kept[-1], points[-1]) > 1e-6:
+        kept.append(points[-1])
+    return kept
+
+
+def sweep_mesh(points: list[Vec3], profile: list[tuple[float, float]], closed: bool) -> Mesh:
+    """A profile swept along a line. Profile points are [right, up] offsets, counter-clockwise
+    seen from behind, looking along the line. Open lines get flat end caps."""
+    frames = sweep_frames(points, closed)
+    k = len(profile)
+    v: list[Vec3] = []
+    for p, (_, r, up) in zip(points, frames):
+        for u, w in profile:
+            v.append(tuple(round(p[c] + r[c] * u + up[c] * w, 4) for c in range(3)))
+    f: list[tuple[int, int, int]] = []
+    count = len(points) if closed else len(points) - 1
+    for i in range(count):
+        i2 = (i + 1) % len(points)
+        for j in range(k):
+            a, b = i * k + j, i * k + (j + 1) % k
+            c, d = i2 * k + j, i2 * k + (j + 1) % k
+            f += [(a, c, b), (b, c, d)]
+    if not closed:
+        for ring, start in ((0, True), (len(points) - 1, False)):
+            base = len(v)
+            centre = points[ring]
+            v += [v[ring * k + j] for j in range(k)] + [centre]
+            for j in range(k):
+                a, b = base + j, base + (j + 1) % k
+                f.append((base + k, a, b) if start else (base + k, b, a))
+    return _flatten(v), [i for tri in f for i in tri]
+
+
+def circle_profile(radius: float, segments: int) -> list[tuple[float, float]]:
+    return [
+        (radius * math.cos(math.tau * i / segments), radius * math.sin(math.tau * i / segments))
+        for i in range(segments)
+    ]
+
+
+def rect_profile(width: float, height: float) -> list[tuple[float, float]]:
+    w, h = width / 2, height / 2
+    return [(w, -h), (w, h), (-w, h), (-w, -h)]
