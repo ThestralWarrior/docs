@@ -501,6 +501,18 @@ export class WorldView extends EventTarget {
     this.controls.enabled = false;
   }
 
+  /** Puts the orbit camera where a scene camera is, looking where it looks, and keeps orbiting enabled. */
+  orbitFrom(id) {
+    const c = this.cameras.get(id);
+    if (!c) return;
+    this.useCamera("orbit");
+    this.orbitCamera.position.setFromMatrixPosition(new THREE.Matrix4().fromArray(c.matrix));
+    if (c.look_at) this.controls.target.set(...c.look_at);
+    this.orbitCamera.far = Math.max(this.orbitCamera.far, c.far);
+    this.orbitCamera.updateProjectionMatrix();
+    this.controls.update();
+  }
+
   frameAll() {
     const b = this.lowered.bounds;
     if (!b) return;
