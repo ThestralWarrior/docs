@@ -434,6 +434,23 @@ class _Validator:
     def locked(self, node_id: str) -> bool:
         return any(self.nodes[n].locked for n in [node_id] + self.ancestors(node_id) if n in self.nodes)
 
+    def inherited_tilt(self, solid: Solid) -> bool:
+        for ancestor in self.ancestors(solid.node.id):
+            for other in self.by_node.get(ancestor, []):
+                if other.node.id == ancestor and other.tilt > self.rules.upright_tolerance_deg:
+                    return True
+        return False
+
+    def deliberately_off(self, solid: Solid, gap: float) -> bool:
+        """A support relation yields to intent: an object asked to float is not 'off the table' by mistake."""
+        w = self.waiver(solid.node.id, "floating" if gap > 0 else "sunk")
+        return w is not None and abs(gap) >= self.rules.deliberate_min_offset
+
+    def protected(self, solid: Solid) -> bool:
+        """Locked, or carrying a deliberate choice: suggested fixes move something else when they can."""
+        ids = [solid.node.id, solid.owner] + self.ancestors(solid.node.id)
+        return self.locked(solid.owner) or any(self.nodes[n].intent for n in ids if n in self.nodes)
+
     def tolerance(self, base: float, solid: Solid) -> float:
         return max(base, self.rules.relative_tolerance * solid.height)
 
@@ -665,6 +682,8 @@ class _Validator:
     def check_upright(self, s: Solid) -> None:
         if s.item.type != "asset" or s.tilt <= self.rules.upright_tolerance_deg:
             return
+        if s.node.xform.rot is None and s.node.xform.quat is None and self.inherited_tilt(s):
+            return  # tilted only because what it stands on is tilted: that object's issue covers it
         message = f"{s.id} is tilted {s.tilt:.0f}° from upright."
         w = self.waiver(s.node.id, "upright")
         if w is not None and s.tilt >= self.rules.deliberate_min_tilt_deg:
@@ -723,7 +742,7 @@ class _Validator:
                 if share <= self.allowed_fraction(a, b) or vertical <= self.rules.overlap_height:
                     continue
                 mover, still = (a, b) if _area(a.footprint) <= _area(b.footprint) else (b, a)
-                if self.locked(mover.owner) and not self.locked(still.owner):
+                if self.protected(mover) and not self.protected(still):
                     mover, still = still, mover
                 dx, dz = _escape(_bbox(mover.footprint), _bbox(still.footprint))
                 message = (
@@ -906,6 +925,8 @@ class _Validator:
         outside = fb is not None and not point_in_polygon(s.center[0], s.center[1], _ccw(fb))
         if abs(gap) <= self.tolerance(self.rules.float_tolerance, s) and not outside:
             return None
+        if not outside and self.deliberately_off(s, gap):
+            return None
         where = f"{rel.b}.{rel.surface}" if rel.surface else rel.b
         msg = f"{rel.a} should rest on {where}" + (
             " but is not over it." if outside else f" but is {gap:+.2f} m off it."
@@ -919,7 +940,7 @@ class _Validator:
         room = self.room_of(s.node.id)
         floor = self.rooms[room]["floor"] if room else (self.lw.ground_height(*s.center) or 0.0)
         gap = s.base - floor
-        if abs(gap) <= self.tolerance(self.rules.float_tolerance, s):
+        if abs(gap) <= self.tolerance(self.rules.float_tolerance, s) or self.deliberately_off(s, gap):
             return None
         return (
             f"{rel.a} should stand on the floor but is {gap:+.2f} m off it.",

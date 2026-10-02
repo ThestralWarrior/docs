@@ -13,8 +13,10 @@ text, audio, particles, a few generators) is listed in
 ``LoweredScene.unsupported`` and skipped; its children are still lowered.
 """
 
+import json
 import math
 import random
+from collections import OrderedDict
 from typing import Any, Optional
 
 from .assets import MATERIAL_PRESETS, Material
@@ -80,6 +82,31 @@ DOOR_PANEL_THICKNESS = 0.04
 GLASS_THICKNESS = 0.02
 SCATTER_CAP = 3000
 PLAYED_BEHAVIORS = ("spin", "bob", "sway", "flicker", "follow_path")
+
+
+_TERRAIN_CACHE: "OrderedDict[str, Heightfield]" = OrderedDict()
+TERRAIN_CACHE_SIZE = 8
+
+
+def _cached_terrain(node: Any, paths: dict, zones: dict) -> Heightfield:
+    """Terrain evaluation is most of the cost of lowering an outdoor world, and moving a chair
+    does not change it. Results are reused while the terrain node, paths and zones are the same."""
+    key = json.dumps(
+        [
+            node.model_dump(mode="json", exclude={"children"}),
+            {k: [[round(c, 4) for c in p] for p in v] for k, v in sorted(paths.items())},
+            {k: [[round(c, 4) for c in p] for p in v] for k, v in sorted(zones.items())},
+        ],
+        sort_keys=True,
+    )
+    if key in _TERRAIN_CACHE:
+        _TERRAIN_CACHE.move_to_end(key)
+        return _TERRAIN_CACHE[key]
+    hf = evaluate_terrain(node, paths, zones)
+    _TERRAIN_CACHE[key] = hf
+    if len(_TERRAIN_CACHE) > TERRAIN_CACHE_SIZE:
+        _TERRAIN_CACHE.popitem(last=False)
+    return hf
 
 
 class _Lowerer(GeneratorMixin):
@@ -171,7 +198,7 @@ class _Lowerer(GeneratorMixin):
                     k: [(p[0], p[2]) for p in (apply(inv, (x, 0.0, z)) for x, z in v)]
                     for k, v in self.zone_world.items()
                 }
-                hf = evaluate_terrain(node, paths, zones)
+                hf = _cached_terrain(node, paths, zones)
                 self.warnings += [f"terrain '{node.id}': {w}" for w in hf.warnings]
                 self.terrains.append((node, m, inv, hf))
 
