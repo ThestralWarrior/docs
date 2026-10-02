@@ -103,6 +103,8 @@ The top level of a world file and the objects it holds directly.
 | `walkway_width` | number | 0.6 | v1 | (>0) |
 | `deliberate_min_offset` | number | 0.15 | v1 | A waived floating or sunk check still flags gaps smaller than this: near misses are mistakes, not art. (≥0) |
 | `deliberate_min_tilt_deg` | number | 15.0 | v1 | Likewise for a waived upright check: small tilts are still flagged. (≥0 ≤180) |
+| `relative_tolerance` | number | 0.02 | v1 | Tolerances also scale with the object: this share of its height, if larger. A teacup and a tower both work. (≥0) |
+| `upright_tolerance_deg` | number | 3.0 | v1 | Tilt allowed before an object counts as tipped. (>0 ≤90) |
 | `max_builder_intents` | integer | 6 | v1 | How many nodes the builder may give its own intents; the user's are not counted. (≥0) |
 | `ask_when_unexplained` | boolean | true | v1 | Large unexplained breaks in a scene whose brief allows oddness are asked about, not repaired. |
 | `scale_ratio` | [number × 2] | (0.5, 2.0) | v1 | Allowed multiple of the typical category size. |

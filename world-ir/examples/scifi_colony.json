@@ -939,7 +939,7 @@
         "on": "terrain"
       },
       "xform": {
-        "pos": [-22, 5.0, -19],
+        "pos": [-16, 5.0, -25],
         "yaw": 40
       },
       "behaviors": [
@@ -983,7 +983,7 @@
         "on": "terrain"
       },
       "xform": {
-        "pos": [10, 5.0, -14.5],
+        "pos": [7, 5.0, -14.5],
         "yaw": 160
       }
     },
@@ -995,7 +995,7 @@
         "on": "terrain"
       },
       "xform": {
-        "pos": [-24, 5.0, 13],
+        "pos": [-23, 5.1183, 22],
         "yaw": 120
       }
     },
@@ -1027,7 +1027,7 @@
         "on": "terrain"
       },
       "xform": {
-        "pos": [-27, 5.0, 3]
+        "pos": [-30, 4.9639, 8]
       },
       "children": [
         {
@@ -1285,8 +1285,8 @@
         "gen": "sweep",
         "points": [
           [-17, 0, -11],
-          [-22, 0, -5],
-          [-24, 0, 0.5]
+          [-23, 0, -4],
+          [-27.5, 0, 4.5]
         ],
         "radius": 0.22,
         "elevation": 0.5,
@@ -1371,7 +1371,8 @@
       "name": "Monorail car 1",
       "asset": "train_front",
       "support": {
-        "on": "none"
+        "on": "node",
+        "target": "monorail_beam"
       },
       "xform": {
         "pos": [46, 14.35, -0.0]
@@ -1394,7 +1395,8 @@
       "name": "Monorail car 2",
       "asset": "train_car",
       "support": {
-        "on": "none"
+        "on": "node",
+        "target": "monorail_beam"
       },
       "xform": {
         "pos": [46, 14.35, -4.4]
@@ -1417,7 +1419,8 @@
       "name": "Monorail car 3",
       "asset": "train_car",
       "support": {
-        "on": "none"
+        "on": "node",
+        "target": "monorail_beam"
       },
       "xform": {
         "pos": [46, 14.35, -8.8]

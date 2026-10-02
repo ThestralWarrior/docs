@@ -14679,6 +14679,21 @@
           "title": "Deliberate Min Tilt Deg",
           "type": "number"
         },
+        "relative_tolerance": {
+          "default": 0.02,
+          "description": "Tolerances also scale with the object: this share of its height, if larger. A teacup and a tower both work.",
+          "minimum": 0,
+          "title": "Relative Tolerance",
+          "type": "number"
+        },
+        "upright_tolerance_deg": {
+          "default": 3.0,
+          "description": "Tilt allowed before an object counts as tipped.",
+          "exclusiveMinimum": 0,
+          "maximum": 90,
+          "title": "Upright Tolerance Deg",
+          "type": "number"
+        },
         "max_builder_intents": {
           "default": 6,
           "description": "How many nodes the builder may give its own intents; the user's are not counted.",

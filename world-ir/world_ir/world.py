@@ -95,6 +95,14 @@ class ValidationRules(IRModel):
     deliberate_min_tilt_deg: float = Field(
         15.0, ge=0, le=180, description="Likewise for a waived upright check: small tilts are still flagged."
     )
+    relative_tolerance: float = Field(
+        0.02,
+        ge=0,
+        description="Tolerances also scale with the object: this share of its height, if larger. A teacup and a tower both work.",
+    )
+    upright_tolerance_deg: float = Field(
+        3.0, gt=0, le=90, description="Tilt allowed before an object counts as tipped."
+    )
     max_builder_intents: int = Field(
         6, ge=0, description="How many nodes the builder may give its own intents; the user's are not counted."
     )

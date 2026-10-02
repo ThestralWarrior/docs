@@ -56,6 +56,28 @@ Every object and field carries a tier:
 
 The world can describe much more than the repair model may change. The v1 repair model only edits `xform.pos`, `xform.yaw` and `xform.scale`.
 
+## Validators
+
+`validate(world)` lowers the world and measures what the viewer would draw. It returns a report of issues, each naming the node to edit, how far off it is, and usually a suggested fix written as a repair action.
+
+| Check | What it measures |
+|---|---|
+| floating, sunk | The object's base against what holds it up: floor, terrain, the named surface of another object, or the ceiling (its top, for things hung there). `support: none` needs a reason: a category that floats by nature (ship, drone, bird...) or an intent. |
+| upright | Tilt from vertical. |
+| overlap | Footprints and heights of every pair of objects, except parts of one group or one resting on another. Allowed overlaps (chairs under tables) come from the rules or `allow_overlap` relations. |
+| inside_wall, out_of_bounds | Footprints outside their room, objects off the terrain. |
+| door_clearance | Objects inside a door's clearance zone or any zone that must stay clear. |
+| scale | Height against a typical height for the category. |
+| relations | 22 of the 46 relation kinds so far: on, near, faces, against_wall, inside_region, clear, not_blocking, no_overlap, count, requires, forbids, and more. The rest are listed as not checked yet. |
+
+- **Severity.** `error` must be fixed; `warning` is a broken soft relation; `ask` is something odd that may be deliberate, put to the user instead of repaired; `info` is waived by intent, shown but never repaired.
+- **Tolerances scale with the object** (`rules.relative_tolerance`), so a teacup and a tower are judged alike.
+- **Fixes go to the right node.** Collisions move the whole group or prefab instance; turns and heights edit the object itself, in its parent's frame.
+- **`report.as_text()`** is what the repair model reads. `as_text(hints=True)` adds the suggested fixes.
+- **`greedy_repair(world)`** applies the suggested fixes round by round and undoes any round that makes the score worse. It is the baseline the trained model has to beat, and the source of worked examples for training.
+
+Validating the bedroom takes about 3 ms; the outdoor worlds about a second, almost all of it terrain.
+
 ## Deliberate oddness
 
 Validators never decide what a scene should look like; they check that it matches what it says it intends. A horror room with a chair stuck to the ceiling must not be "repaired" back to the floor, so the builder writes the intent down, with the user's own words as evidence:
@@ -108,11 +130,13 @@ world_ir/        Pydantic models: the schema itself
   terrain_eval.py  noise, terrain edits, layers, ground height
   geometry.py      matrices, colour, roof, dome, rock and sweep meshes
   snap.py          put terrain-supported nodes on the ground
+  validate.py      the validators: issues, severities, suggested fixes, repair-model text
+  baseline.py      rule-based repair from the suggested fixes
 examples/        minimal.json, bedroom.json, horror_room.json, cabin_clearing.json, scifi_colony.json
 viewer/          three.js loader (src/loader.js), demo page, lowered scenes, Kenney CC0 furniture, nature and space models
 schema/          generated JSON Schemas for worlds, actions and lowered scenes
 docs/            generated REFERENCE.md and catalogue.json
-tests/           validation, cross-reference, intent, lowering and action tests
+tests/           validation, cross-reference, intent, lowering, validator and action tests
 ```
 
 ## Use
@@ -127,6 +151,7 @@ python scripts/measure_assets.py viewer/assets/kenney/nature --height tree-pinet
 python scripts/fix_glb_metalness.py viewer/assets/kenney/nature   # some kits mark leaves and fabric as metal
 python scripts/fix_glb_metalness.py viewer/assets/kenney/space --metal 0.35   # and some mark every hull colour fully metallic
 python scripts/snap.py examples/scifi_colony.json                  # ground heights for terrain-supported nodes
+python scripts/validate.py examples/*.json --hints                  # check worlds; --repair applies the suggested fixes
 
 cd viewer && npm install && npm run serve                 # then open http://localhost:8000/?scene=bedroom
 ```

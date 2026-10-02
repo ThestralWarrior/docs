@@ -849,9 +849,12 @@ class _Lowerer(GeneratorMixin):
             )
 
 
-def lower(world: World) -> LoweredScene:
-    """Lowers a validated world. Deterministic: the same world always gives the same scene."""
-    lowerer = _Lowerer(world)
+def lower(world: World, lowerer: Optional["_Lowerer"] = None) -> LoweredScene:
+    """Lowers a validated world. Deterministic: the same world always gives the same scene.
+
+    Pass a fresh ``_Lowerer`` to keep its ground heights and node matrices for later checks.
+    """
+    lowerer = lowerer or _Lowerer(world)
     for root in world.nodes:
         lowerer.lower_node(root, identity(), True)
     lowerer.lower_scatters()

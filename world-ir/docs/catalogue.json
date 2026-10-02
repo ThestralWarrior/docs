@@ -545,6 +545,26 @@
               "repair": null
             },
             {
+              "name": "relative_tolerance",
+              "type": "number",
+              "limits": "≥0",
+              "default": "0.02",
+              "description": "Tolerances also scale with the object: this share of its height, if larger. A teacup and a tower both work.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
+              "name": "upright_tolerance_deg",
+              "type": "number",
+              "limits": ">0 ≤90",
+              "default": "3.0",
+              "description": "Tilt allowed before an object counts as tipped.",
+              "tier": "v1",
+              "ref": null,
+              "repair": null
+            },
+            {
               "name": "max_builder_intents",
               "type": "integer",
               "limits": "≥0",
