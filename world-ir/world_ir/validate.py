@@ -76,6 +76,51 @@ TYPICAL_HEIGHT = {
     "pine tree": 12.0,
     "tree": 8.0,
     "bush": 1.0,
+    "bunk bed": 1.6,
+    "low bench": 0.45,
+    "low bookcase": 0.8,
+    "kitchen cabinet": 0.9,
+    "wall cabinet": 0.6,
+    "bathroom cabinet": 0.85,
+    "tv cabinet": 0.55,
+    "side table": 0.7,
+    "coffee table": 0.45,
+    "dining table": 0.75,
+    "bar counter": 0.95,
+    "ottoman": 0.45,
+    "toilet": 0.8,
+    "bathtub": 0.6,
+    "shower": 2.1,
+    "sink": 0.95,
+    "mirror": 0.8,
+    "fridge": 1.7,
+    "stove": 0.9,
+    "range hood": 0.7,
+    "microwave": 0.3,
+    "coffee machine": 0.35,
+    "blender": 0.4,
+    "toaster": 0.2,
+    "washing machine": 0.85,
+    "dryer": 0.85,
+    "washer dryer": 1.8,
+    "television": 0.7,
+    "floor lamp": 1.6,
+    "ceiling lamp": 0.4,
+    "wall lamp": 0.2,
+    "ceiling fan": 0.3,
+    "coat rack": 1.6,
+    "coat hooks": 0.5,
+    "potted plant": 1.2,
+    "small plant": 0.3,
+    "speaker": 1.2,
+    "small speaker": 0.55,
+    "trash can": 0.8,
+    "teddy bear": 0.6,
+    "pillow": 0.3,
+    "books": 0.2,
+    "laptop": 0.3,
+    "computer screen": 0.5,
+    "radio": 0.4,
 }
 """Typical heights in metres, for the scale check. Unknown categories are not checked."""
 
@@ -696,10 +741,15 @@ class _Validator:
 
     # Overlap -------------------------------------------------------------------------
 
+    def rests_on(self, a: Solid, b: Solid) -> bool:
+        """a declares b (or what b belongs to) as its support. Its base may dip below b's box top, onto a lower surface."""
+        sup = a.node.support
+        return sup is not None and sup.on == "node" and sup.target in {b.node.id, b.owner, *self.ancestors(b.node.id)}
+
     def assembled(self, a: Solid, b: Solid) -> bool:
         """Parts of one object, or one resting on the other: not an overlap problem."""
         anc_a, anc_b = self.ancestors(a.node.id), self.ancestors(b.node.id)
-        if a.node.id in anc_b or b.node.id in anc_a:
+        if a.node.id in anc_b or b.node.id in anc_a or self.rests_on(a, b) or self.rests_on(b, a):
             return True
         common = next((n for n in anc_a if n in anc_b), None)
         return common is not None and isinstance(self.nodes[common], (GroupNode, PrefabNode))

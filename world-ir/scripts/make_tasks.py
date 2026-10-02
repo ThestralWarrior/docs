@@ -1,6 +1,7 @@
 """Plants bugs in clean worlds and writes repair tasks, one JSON object per line.
 
 python scripts/make_tasks.py examples/bedroom.json examples/horror_room.json --count 200 --out tasks.jsonl
+python scripts/make_tasks.py generated/*.json --count 20 --out tasks.jsonl    # from scripts/gen_worlds.py
 
 Each line has the broken world, the planted bugs with their oracle fixes, any decoys,
 and the prompt a repair model would read.
@@ -28,9 +29,10 @@ def main() -> None:
     args = parser.parse_args()
     written = 0
     with args.out.open("w") as f:
-        for path in args.worlds:
+        for i, path in enumerate(args.worlds):
             world = World.model_validate_json(path.read_text())
-            for task in make_tasks(world, args.count, seed=args.seed):
+            # A different seed per world, so bug kinds don't come out in the same order everywhere.
+            for task in make_tasks(world, args.count, seed=args.seed + 7919 * i):
                 record = json.loads(task.model_dump_json(by_alias=True, exclude_none=True))
                 record["prompt"] = repair_prompt(task.world)
                 f.write(json.dumps(record) + "\n")

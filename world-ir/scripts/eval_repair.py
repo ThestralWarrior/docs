@@ -77,7 +77,9 @@ def main() -> None:
         tasks = [Task.model_validate(json.loads(line)) for line in args.tasks.read_text().splitlines()]
     else:
         tasks = [
-            t for p in args.worlds for t in make_tasks(World.model_validate_json(p.read_text()), args.count, args.seed)
+            t
+            for i, p in enumerate(args.worlds)
+            for t in make_tasks(World.model_validate_json(p.read_text()), args.count, args.seed + 7919 * i)
         ]
     for policy in args.policy or ["noop", "greedy", "oracle"]:
         print(json.dumps(evaluate(tasks, policy)))

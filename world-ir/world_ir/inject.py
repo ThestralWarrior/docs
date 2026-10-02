@@ -61,6 +61,16 @@ def _errors(report: ValidationReport) -> set[tuple]:
     return {(i.code, i.node, i.part, i.other, i.relation) for i in report.issues if i.severity == "error"}
 
 
+def _still_found(planted: list["Bug"], report: ValidationReport, v: Any) -> bool:
+    """Every bug planted so far still shows all the errors it was recorded with."""
+    errors = _errors(report)
+    for bug in planted:
+        codes = {e[0] for e in errors if bug.node in (e[1], e[2]) or v.unit(bug.node) == e[1]}
+        if not set(bug.codes) <= codes:
+            return False
+    return True
+
+
 class Injector:
     """Plants bugs in one clean world. Deterministic for a given seed."""
 
@@ -237,6 +247,8 @@ class Injector:
             new_report = _Validator(candidate).run()
             new = _errors(new_report) - _errors(report)
             mine = [e for e in new if node.id in (e[1], e[2]) or v.unit(node.id) == e[1]]
+            if not _still_found(planted, new_report, v):
+                continue  # this change would hide a bug planted earlier
             if make_decoy:
                 if new:  # a decoy must not break anything else
                     continue

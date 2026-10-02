@@ -80,13 +80,37 @@ Validating the bedroom takes about 3 ms; the outdoor worlds about a second, almo
 
 ## Training data, scoring and replays
 
-- **Bug injector** (`world_ir/inject.py`): plants labelled mistakes in clean worlds: lift, sink, push into a wall, collide, block a door, turn, tilt, scale. A bug is kept only if the validators report a new error for it, so every label is true, and each one carries its oracle undo. Decoys make an object float on purpose (the brief gains a sentence, the object gains an intent quoting it), so a model also learns what not to fix.
+- **Bug injector** (`world_ir/inject.py`): plants labelled mistakes in clean worlds: lift, sink, push into a wall, collide, block a door, turn, tilt, scale. A bug is kept only if the validators report a new error for it and it hides none of the bugs planted before it, so every label is true, and each one carries its oracle undo. Decoys make an object float on purpose (the brief gains a sentence, the object gains an intent quoting it), so a model also learns what not to fix.
 - **Repair text** (`repair_text.py`): what a repair model reads: instructions, rooms and objects in parent space, and the issue list. Provenance is left out, so the model never sees which objects were tampered with.
 - **Reward** (`reward.py`): `score_repair(world, actions)` applies the actions and lets the validators judge: errors fixed, errors added, edit size, and deliberate oddities or user questions undone. Invalid output and edits to locked nodes score -1. This is the GRPO reward.
 - **Baseline** on 76 room tasks (`scripts/eval_repair.py`): the rule-based repairer fixes 75% of errors and leaves 45% of worlds clean, adding 0.29 errors per task; the oracle reaches 100%. That gap is what the trained model has to close.
 - **Replays** (`replay.py`, `patch.py`): a repair recorded one action at a time, each step stored as a small scene patch. The viewer plays them back in place (moves, grow-ins, shrink-outs, colour fades) with coloured outlines and labels: red errors, orange the fix in progress, green fixed, purple deliberate, yellow questions for the user. Open `index.html?replay=horror_repair&autoplay`.
 
 ![A replay in the horror room: the chair hanging 30 cm low is put back on the ceiling, the deliberate oddities stay purple, and the bed blocking the door is a question for the user](docs/replay_horror.png)
+
+## Clean worlds at scale
+
+The bug injector needs clean worlds to break, and a repair model only generalises if those worlds vary. `world_ir/worldgen.py` makes them:
+
+```python
+from world_ir.worldgen import generate, generate_suite
+
+generate(7, "kitchen").world                                        # one furnished room
+generate(7, "living_room", theme="haunted").world                   # with deliberate oddities
+generate_suite(7, ["hallway", "bedroom", "bathroom"]).world          # a flat: rooms joined by doors
+```
+
+- **14 room types**, each with its own furnishing programme: bedroom, kids' room, living room, kitchen, dining room, bathroom, office, library, classroom, cafe, laundry, hallway, basement, waiting room. A kitchen gets counter runs with the sink under the window, a hood over the stove and wall cabinets above; a classroom a teacher's desk and rows of desks with chairs; a cafe a bar with stools and tables with chairs.
+- **Varied shells**: rectangles and L-shapes, sizes per room type, 1–3 doors (hinged, sliding, open or shut), 0–3 windows, 10 styles with palettes, floor and wall materials, fabric colours, six times of day. Some rooms are moved or turned away from the origin, so coordinates are not always room-relative.
+- **Flats**: 2–4 rooms side by side, joined by a door on one side and an open doorway on the other, each furnished by its own programme.
+- **Themes**: one room in seven gets a licence (abandoned, haunted, horror, creepy, messy, cluttered, surreal, dreamlike, zero gravity) and 1–3 deliberate oddities: a chair knocked over, a bookcase leaning, books floating, a sofa sunk into the floor, a chair upside down on the ceiling, boxes piled into each other. Each carries its intent, a builder licence or a quote the prompt really contains, so it validates as deliberate.
+- **Relations written from the layout**: against a wall, beside, facing, on top of, hanging from the ceiling, distances, clear zones, door clearance, counts, required and forbidden categories. The brief is written in the words a user might type, from what was actually placed.
+- **Clean by construction.** Placement (`layout.py`) uses the validators' own footprint maths, and doors, windows and the space in front of cupboards are reserved before anything goes in. Then the world is validated, and only a world with no errors, warnings or questions is returned. Optional pieces that still fail would be dropped and the world rechecked, and a draw that cannot be furnished is redrawn from the next sub-seed. Over 4,500 test seeds nothing had to be dropped.
+- **Furniture** (`furniture.py`): 112 models from Kenney's Furniture Kit (CC0), measured from the GLBs (`measure_assets.py --surfaces`): size, the height and area of the top surface things can stand on, and which way the back faces.
+
+On 2,000 seeds (`scripts/gen_worlds.py --count 2000 --stats-only`), 37 s: every world clean; 400 flats and 2,603 rooms across all 14 types; 4–46 objects per world; 110 of 112 models and 67 categories used; 15 relation kinds; 308 deliberate oddities; 1,973 distinct prompts. Bugs planted in generated worlds land on 56 categories, against 6 objects in the hand-written bedroom. On 240 tasks from 60 generated worlds, the rule-based repairer fixes 69% of errors and leaves 27% of worlds clean, adding 0.38 errors per task; the oracle reaches 100%.
+
+![Generated worlds: bedroom, kitchen, a three-room flat, cafe, classroom, bathroom, a surreal living room with deliberate oddities, office](docs/generated_rooms.jpg)
 
 ## Deliberate oddness
 
@@ -147,11 +171,14 @@ world_ir/        Pydantic models: the schema itself
   reward.py        scoring a repair with the validators
   patch.py         scene patches: what changed between two lowered scenes
   replay.py        repairs recorded step by step for the viewer
-examples/        minimal.json, bedroom.json, horror_room.json, cabin_clearing.json, scifi_colony.json
+  furniture.py     the furniture library: 112 Kenney models, what each is and where it goes (sizes in data/)
+  layout.py        placing furniture against walls, beside, in front of and on top of other pieces
+  worldgen.py      the clean-world generator: rooms, flats, themes, briefs, validated clean
+examples/        minimal.json, bedroom.json, horror_room.json, cabin_clearing.json, scifi_colony.json; generated/ from worldgen
 viewer/          three.js loader (src/loader.js), page and replay player (src/app.js), lowered scenes, replays, Kenney CC0 models
 schema/          generated JSON Schemas for worlds, actions and lowered scenes
 docs/            generated REFERENCE.md and catalogue.json
-tests/           validation, cross-reference, intent, lowering, validator and action tests
+tests/           validation, cross-reference, intent, lowering, validator, injector, generator and action tests
 ```
 
 ## Use
@@ -162,12 +189,14 @@ pytest                                                    # schema, lowering and
 python scripts/build_docs.py                              # regenerate schema/ and docs/ after changing world_ir/
 python scripts/lower.py examples/*.json --out-dir viewer/scenes   # regenerate the scenes the viewer loads
 python scripts/measure_assets.py viewer/assets/kenney/furniture --scale 1.9   # asset dims from the GLBs (needs trimesh)
+python scripts/measure_assets.py viewer/assets/kenney/furniture --scale 1.9 --surfaces --out world_ir/data/kenney_furniture.json
 python scripts/measure_assets.py viewer/assets/kenney/nature --height tree-pinetalla=9   # or a real height per model
 python scripts/fix_glb_metalness.py viewer/assets/kenney/nature   # some kits mark leaves and fabric as metal
 python scripts/fix_glb_metalness.py viewer/assets/kenney/space --metal 0.35   # and some mark every hull colour fully metallic
 python scripts/snap.py examples/scifi_colony.json                  # ground heights for terrain-supported nodes
 python scripts/validate.py examples/*.json --hints                  # check worlds; --repair applies the suggested fixes
-python scripts/make_tasks.py examples/*.json --count 200 --out tasks.jsonl   # training tasks
+python scripts/gen_worlds.py --count 300 --out generated/          # clean worlds, with variety stats
+python scripts/make_tasks.py generated/*.json --count 20 --out tasks.jsonl   # training tasks
 python scripts/eval_repair.py examples/*.json --count 30            # score noop, rule-based and oracle repairs
 python scripts/replay.py --demo                                     # record the demo replays in viewer/replays/
 

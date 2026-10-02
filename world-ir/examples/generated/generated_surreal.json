@@ -1,0 +1,1631 @@
+{
+ "ir_version": "1.0",
+ "id": "living_room_1",
+ "name": "Large living room",
+ "units": "metres",
+ "up_axis": "+y",
+ "seed": 1,
+ "brief": {
+  "prompt": "Design a large, surreal living room with a sofa and a TV.",
+  "setting": "interior",
+  "archetype": "living_room",
+  "style": [
+   "victorian"
+  ],
+  "palette": [
+   "#2f4f4f",
+   "#b08d57",
+   "#e8dfd0"
+  ],
+  "time_of_day": "22:30",
+  "mood": [
+   "surreal"
+  ],
+  "required": [
+   {
+    "category": "sofa",
+    "min": 1,
+    "source": "prompt",
+    "confidence": 1.0
+   },
+   {
+    "category": "television",
+    "min": 1,
+    "source": "prompt",
+    "confidence": 1.0
+   }
+  ],
+  "forbidden": [],
+  "references": [],
+  "messages": []
+ },
+ "environment": {
+  "sky": {
+   "type": "color",
+   "color": "#1b2233"
+  },
+  "ambient": {
+   "type": "hemisphere",
+   "color": "#fff4e6",
+   "ground_color": "#6b5a4a",
+   "intensity": 0.3
+  },
+  "time_of_day": "22:30",
+  "tone_mapping": "aces",
+  "exposure": 1.25,
+  "reflections": "none",
+  "reflection_intensity": 1.0,
+  "gravity_m_s2": -9.81
+ },
+ "assets": {
+  "bookcase_closed_doors": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/bookcaseClosedDoors.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "bookcase",
+   "dims": [
+    0.76,
+    1.615,
+    0.475
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": true,
+    "wall": false,
+    "ceiling": false,
+    "on_object": false,
+    "receptacle": true
+   },
+   "surfaces": [
+    {
+     "name": "top",
+     "height": 1.61,
+     "area": [
+      [
+       -0.353,
+       -0.221
+      ],
+      [
+       0.353,
+       -0.221
+      ],
+      [
+       0.353,
+       0.221
+      ],
+      [
+       -0.353,
+       0.221
+      ]
+     ]
+    }
+   ],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "metal",
+    "wood"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "bookcaseClosedDoors"
+   }
+  },
+  "bookcase_open_low": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/bookcaseOpenLow.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "low bookcase",
+   "dims": [
+    0.76,
+    0.76,
+    0.475
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": true,
+    "wall": false,
+    "ceiling": false,
+    "on_object": false,
+    "receptacle": true
+   },
+   "surfaces": [
+    {
+     "name": "top",
+     "height": 0.7,
+     "area": [
+      [
+       -0.353,
+       -0.187
+      ],
+      [
+       0.353,
+       -0.187
+      ],
+      [
+       0.353,
+       0.187
+      ],
+      [
+       -0.353,
+       0.187
+      ]
+     ]
+    }
+   ],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "wood"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "bookcaseOpenLow"
+   }
+  },
+  "books": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/books.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "books",
+   "dims": [
+    0.286,
+    0.197,
+    0.18
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": false,
+    "wall": false,
+    "ceiling": false,
+    "on_object": true,
+    "receptacle": false
+   },
+   "surfaces": [],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "carpetDarker",
+    "carpetWhite",
+    "metal",
+    "plant"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "books"
+   }
+  },
+  "cabinet_television": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/cabinetTelevision.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "tv cabinet",
+   "dims": [
+    1.52,
+    0.589,
+    0.475
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": true,
+    "wall": false,
+    "ceiling": false,
+    "on_object": false,
+    "receptacle": true
+   },
+   "surfaces": [
+    {
+     "name": "top",
+     "height": 0.589,
+     "area": [
+      [
+       -0.706,
+       -0.221
+      ],
+      [
+       0.706,
+       -0.221
+      ],
+      [
+       0.706,
+       0.221
+      ],
+      [
+       -0.706,
+       0.221
+      ]
+     ]
+    }
+   ],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "wood"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "cabinetTelevision"
+   }
+  },
+  "ceiling_fan": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/ceilingFan.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "ceiling fan",
+   "dims": [
+    0.864,
+    0.254,
+    0.998
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": false,
+    "wall": false,
+    "ceiling": true,
+    "on_object": false,
+    "receptacle": false
+   },
+   "surfaces": [],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "lamp",
+    "metalLight",
+    "wood"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "ceilingFan"
+   }
+  },
+  "chair_desk": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/chairDesk.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "desk chair",
+   "dims": [
+    0.636,
+    1.154,
+    0.597
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": true,
+    "wall": false,
+    "ceiling": false,
+    "on_object": false,
+    "receptacle": false
+   },
+   "surfaces": [],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "carpet",
+    "metalMedium"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "chairDesk"
+   }
+  },
+  "lounge_chair": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/loungeChair.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "armchair",
+   "dims": [
+    0.931,
+    0.874,
+    0.779
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": true,
+    "wall": false,
+    "ceiling": false,
+    "on_object": false,
+    "receptacle": false
+   },
+   "surfaces": [],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "carpet",
+    "wood"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "loungeChair"
+   }
+  },
+  "lounge_sofa_long": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/loungeSofaLong.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "sofa",
+   "dims": [
+    1.862,
+    0.874,
+    1.558
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": true,
+    "wall": false,
+    "ceiling": false,
+    "on_object": false,
+    "receptacle": false
+   },
+   "surfaces": [],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "carpet",
+    "wood"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "loungeSofaLong"
+   }
+  },
+  "lounge_sofa_ottoman": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/loungeSofaOttoman.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "ottoman",
+   "dims": [
+    0.836,
+    0.437,
+    0.855
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": true,
+    "wall": false,
+    "ceiling": false,
+    "on_object": false,
+    "receptacle": true
+   },
+   "surfaces": [
+    {
+     "name": "top",
+     "height": 0.437,
+     "area": [
+      [
+       -0.388,
+       -0.397
+      ],
+      [
+       0.388,
+       -0.397
+      ],
+      [
+       0.388,
+       0.397
+      ],
+      [
+       -0.388,
+       0.397
+      ]
+     ]
+    }
+   ],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "carpet",
+    "wood"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "loungeSofaOttoman"
+   }
+  },
+  "plant_small1": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/plantSmall1.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "small plant",
+   "dims": [
+    0.18,
+    0.266,
+    0.18
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": false,
+    "wall": false,
+    "ceiling": false,
+    "on_object": true,
+    "receptacle": false
+   },
+   "surfaces": [],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "plant",
+    "wood"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "plantSmall1"
+   }
+  },
+  "plant_small2": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/plantSmall2.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "small plant",
+   "dims": [
+    0.18,
+    0.266,
+    0.18
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": false,
+    "wall": false,
+    "ceiling": false,
+    "on_object": true,
+    "receptacle": false
+   },
+   "surfaces": [],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "plant",
+    "wood"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "plantSmall2"
+   }
+  },
+  "potted_plant": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/pottedPlant.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "potted plant",
+   "dims": [
+    0.403,
+    1.243,
+    0.459
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": true,
+    "wall": false,
+    "ceiling": false,
+    "on_object": false,
+    "receptacle": false
+   },
+   "surfaces": [],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "plant",
+    "wood",
+    "woodDark"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "pottedPlant"
+   }
+  },
+  "table_coffee_glass_square": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/tableCoffeeGlassSquare.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "coffee table",
+   "dims": [
+    0.76,
+    0.437,
+    0.76
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": true,
+    "wall": false,
+    "ceiling": false,
+    "on_object": false,
+    "receptacle": true
+   },
+   "surfaces": [
+    {
+     "name": "top",
+     "height": 0.437,
+     "area": [
+      [
+       -0.353,
+       -0.353
+      ],
+      [
+       0.353,
+       -0.353
+      ],
+      [
+       0.353,
+       0.353
+      ],
+      [
+       -0.353,
+       0.353
+      ]
+     ]
+    }
+   ],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "glass",
+    "metal"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "tableCoffeeGlassSquare"
+   }
+  },
+  "television_modern": {
+   "source": "kenney",
+   "uri": "assets/kenney/furniture/televisionModern.glb",
+   "license": {
+    "spdx": "CC0-1.0",
+    "attribution": "Kenney Furniture Kit 2.0 (kenney.nl)",
+    "commercial_ok": true
+   },
+   "category": "television",
+   "dims": [
+    1.301,
+    0.864,
+    0.244
+   ],
+   "front": "+z",
+   "origin": "bottom_center",
+   "placement": {
+    "floor": false,
+    "wall": false,
+    "ceiling": false,
+    "on_object": true,
+    "receptacle": false
+   },
+   "surfaces": [],
+   "materials": [],
+   "style": [
+    "low_poly"
+   ],
+   "variants": {},
+   "material_slots": [
+    "metal",
+    "metalDark"
+   ],
+   "states": {},
+   "tags": [],
+   "extras": {
+    "kit_scale": 1.9,
+    "model": "televisionModern"
+   }
+  }
+ },
+ "materials": {
+  "fabric_1": {
+   "preset": "fabric_linen",
+   "base_color": "#b08d57",
+   "metallic": 0.0,
+   "roughness": 0.7,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false,
+   "uv_scale": [
+    1.0,
+    1.0
+   ],
+   "uv_rotation_deg": 0.0,
+   "tags": []
+  },
+  "fabric_2": {
+   "preset": "fabric_linen",
+   "base_color": "#b08d57",
+   "metallic": 0.0,
+   "roughness": 0.7,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false,
+   "uv_scale": [
+    1.0,
+    1.0
+   ],
+   "uv_rotation_deg": 0.0,
+   "tags": []
+  },
+  "floor": {
+   "preset": "fabric_linen",
+   "base_color": "#a3b18a",
+   "metallic": 0.0,
+   "roughness": 0.7,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false,
+   "uv_scale": [
+    1.0,
+    1.0
+   ],
+   "uv_rotation_deg": 0.0,
+   "tags": []
+  },
+  "walls": {
+   "preset": "brick_red",
+   "base_color": "#9b5b45",
+   "metallic": 0.0,
+   "roughness": 0.7,
+   "emissive_intensity": 0.0,
+   "opacity": 1.0,
+   "transmission": 0.0,
+   "ior": 1.5,
+   "double_sided": false,
+   "uv_scale": [
+    1.0,
+    1.0
+   ],
+   "uv_rotation_deg": 0.0,
+   "tags": []
+  }
+ },
+ "prefabs": {},
+ "nodes": [
+  {
+   "id": "living_room",
+   "tags": [],
+   "xform": {
+    "pos": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "scale": 1.0
+   },
+   "visible": true,
+   "locked": false,
+   "intent": [],
+   "behaviors": [],
+   "children": [
+    {
+     "id": "sofa",
+     "tags": [],
+     "xform": {
+      "pos": [
+       0.789,
+       -0.34,
+       2.759
+      ],
+      "yaw": 90.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "floor"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [
+      {
+       "allows": [
+        "sunk"
+       ],
+       "source": "builder",
+       "licence": "surreal",
+       "note": "The sofa has sunk 0.34 m into the floor, like a dream."
+      }
+     ],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "asset",
+     "asset": "lounge_sofa_long",
+     "materials": [
+      {
+       "slot": "carpet",
+       "material": "fabric_1"
+      }
+     ],
+     "state": {}
+    },
+    {
+     "id": "tv_cabinet",
+     "tags": [],
+     "xform": {
+      "pos": [
+       3.903,
+       0.0,
+       2.759
+      ],
+      "yaw": 270.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "floor"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [
+      {
+       "id": "television",
+       "tags": [],
+       "xform": {
+        "pos": [
+         0.0,
+         0.589,
+         0.0
+        ],
+        "yaw": 0.0,
+        "scale": 1.0
+       },
+       "support": {
+        "on": "node",
+        "target": "tv_cabinet",
+        "surface": "top"
+       },
+       "visible": true,
+       "locked": false,
+       "intent": [],
+       "behaviors": [],
+       "children": [],
+       "extras": {},
+       "kind": "asset",
+       "asset": "television_modern",
+       "materials": [],
+       "state": {}
+      }
+     ],
+     "extras": {},
+     "kind": "asset",
+     "asset": "cabinet_television",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "coffee_table",
+     "tags": [],
+     "xform": {
+      "pos": [
+       2.408,
+       0.0,
+       2.759
+      ],
+      "yaw": 90.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "floor"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [
+      {
+       "id": "small_plant",
+       "tags": [],
+       "xform": {
+        "pos": [
+         -0.156,
+         0.437,
+         -0.08
+        ],
+        "yaw": 0.0,
+        "scale": 1.0
+       },
+       "support": {
+        "on": "node",
+        "target": "coffee_table",
+        "surface": "top"
+       },
+       "visible": true,
+       "locked": false,
+       "intent": [],
+       "behaviors": [],
+       "children": [],
+       "extras": {},
+       "kind": "asset",
+       "asset": "plant_small2",
+       "materials": [],
+       "state": {}
+      }
+     ],
+     "extras": {},
+     "kind": "asset",
+     "asset": "table_coffee_glass_square",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "books",
+     "tags": [],
+     "xform": {
+      "pos": [
+       2.462,
+       1.297,
+       2.631
+      ],
+      "rot": [
+       90.0,
+       68.53,
+       -90.0
+      ],
+      "scale": 1.0
+     },
+     "support": {
+      "on": "node",
+      "target": "coffee_table",
+      "surface": "top"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [
+      {
+       "allows": [
+        "floating",
+        "upright"
+       ],
+       "source": "builder",
+       "licence": "surreal",
+       "note": "The books hovers 0.9 m up, unexplained."
+      }
+     ],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "asset",
+     "asset": "books",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "armchair",
+     "tags": [],
+     "xform": {
+      "pos": [
+       2.408,
+       0.0,
+       3.829
+      ],
+      "yaw": 180.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "floor"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "asset",
+     "asset": "lounge_chair",
+     "materials": [
+      {
+       "slot": "carpet",
+       "material": "fabric_2"
+      }
+     ],
+     "state": {}
+    },
+    {
+     "id": "bookcase",
+     "tags": [],
+     "xform": {
+      "pos": [
+       0.601,
+       0.0,
+       0.247
+      ],
+      "yaw": 0.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "floor"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "asset",
+     "asset": "bookcase_closed_doors",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "low_bookcase",
+     "tags": [],
+     "xform": {
+      "pos": [
+       3.903,
+       0.0,
+       0.611
+      ],
+      "yaw": 270.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "floor"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "asset",
+     "asset": "bookcase_open_low",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "small_plant_2",
+     "tags": [],
+     "xform": {
+      "pos": [
+       3.96,
+       0.7,
+       0.787
+      ],
+      "yaw": 270.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "node",
+      "target": "low_bookcase",
+      "surface": "top"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "asset",
+     "asset": "plant_small1",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "ottoman",
+     "tags": [],
+     "xform": {
+      "pos": [
+       3.086,
+       0.0,
+       5.222
+      ],
+      "yaw": 0.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "floor"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "asset",
+     "asset": "lounge_sofa_ottoman",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "potted_plant",
+     "tags": [],
+     "xform": {
+      "pos": [
+       3.929,
+       0.0,
+       5.661
+      ],
+      "yaw": 180.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "floor"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "asset",
+     "asset": "potted_plant",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "potted_plant_2",
+     "tags": [],
+     "xform": {
+      "pos": [
+       0.222,
+       0.0,
+       5.661
+      ],
+      "yaw": 180.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "floor"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "asset",
+     "asset": "potted_plant",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "ceiling_fan",
+     "tags": [],
+     "xform": {
+      "pos": [
+       2.075,
+       2.496,
+       2.95
+      ],
+      "yaw": 0.0,
+      "scale": 1.0
+     },
+     "support": {
+      "on": "ceiling"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [
+      {
+       "id": "ceiling_fan_bulb",
+       "tags": [],
+       "xform": {
+        "pos": [
+         0.0,
+         0.025,
+         0.0
+        ],
+        "scale": 1.0
+       },
+       "visible": true,
+       "locked": false,
+       "intent": [],
+       "behaviors": [],
+       "children": [],
+       "extras": {},
+       "kind": "light",
+       "type": "point",
+       "kelvin": 3000.0,
+       "intensity": 70.0,
+       "range": 6.0,
+       "angle_deg": 45.0,
+       "penumbra": 0.3,
+       "size": [
+        1.0,
+        0.5
+       ],
+       "cast_shadows": false
+      }
+     ],
+     "extras": {},
+     "kind": "asset",
+     "asset": "ceiling_fan",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "ceiling_chair",
+     "name": "Chair on the ceiling",
+     "tags": [],
+     "xform": {
+      "pos": [
+       0.961,
+       2.75,
+       4.941
+      ],
+      "rot": [
+       180.0,
+       -14.17,
+       0.0
+      ],
+      "scale": 1.0
+     },
+     "support": {
+      "on": "ceiling"
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [
+      {
+       "allows": [
+        "upright"
+       ],
+       "source": "builder",
+       "licence": "surreal",
+       "note": "A chair hangs upside down from the ceiling."
+      }
+     ],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "asset",
+     "asset": "chair_desk",
+     "materials": [],
+     "state": {}
+    },
+    {
+     "id": "hero_cam",
+     "tags": [],
+     "xform": {
+      "pos": [
+       3.95,
+       1.6,
+       5.61
+      ],
+      "scale": 1.0
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "camera",
+     "projection": "perspective",
+     "fov_deg": 70.0,
+     "near": 0.05,
+     "far": 500.0,
+     "ortho_height": 10.0,
+     "look_at": "sofa",
+     "purpose": "hero"
+    },
+    {
+     "id": "plan_cam",
+     "tags": [],
+     "xform": {
+      "pos": [
+       2.08,
+       6.25,
+       2.95
+      ],
+      "rot": [
+       -90.0,
+       0.0,
+       0.0
+      ],
+      "scale": 1.0
+     },
+     "visible": true,
+     "locked": false,
+     "intent": [],
+     "behaviors": [],
+     "children": [],
+     "extras": {},
+     "kind": "camera",
+     "projection": "orthographic",
+     "fov_deg": 60.0,
+     "near": 0.05,
+     "far": 500.0,
+     "ortho_height": 6.7,
+     "purpose": "top_down"
+    }
+   ],
+   "extras": {},
+   "kind": "room",
+   "room_type": "living_room",
+   "outline": [
+    [
+     0.0,
+     0.0
+    ],
+    [
+     4.15,
+     0.0
+    ],
+    [
+     4.15,
+     5.9
+    ],
+    [
+     0.0,
+     5.9
+    ]
+   ],
+   "height": 2.75,
+   "wall_thickness": 0.12,
+   "floor_material": "floor",
+   "wall_material": "walls",
+   "has_ceiling": true,
+   "openings": [
+    {
+     "id": "door",
+     "type": "door",
+     "wall": 0,
+     "offset": 2.323,
+     "width": 0.93,
+     "height": 2.1,
+     "sill": 0.0,
+     "swing": "out",
+     "hinge": "right",
+     "open": 0.0
+    },
+    {
+     "id": "window_1",
+     "type": "window",
+     "wall": 2,
+     "offset": 1.675,
+     "width": 1.62,
+     "height": 1.24,
+     "sill": 0.86,
+     "swing": "in",
+     "hinge": "left",
+     "open": 0.0
+    },
+    {
+     "id": "window_2",
+     "type": "window",
+     "wall": 3,
+     "offset": 1.706,
+     "width": 1.87,
+     "height": 1.22,
+     "sill": 0.98,
+     "swing": "in",
+     "hinge": "left",
+     "open": 0.0
+    }
+   ],
+   "walls": []
+  }
+ ],
+ "relations": [
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "against_wall",
+   "a": "sofa",
+   "wall": "living_room:3",
+   "side": "back",
+   "max_gap": 0.1
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "against_wall",
+   "a": "tv_cabinet",
+   "wall": "living_room:1",
+   "side": "back",
+   "max_gap": 0.1
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "on",
+   "a": "television",
+   "b": "tv_cabinet",
+   "surface": "top"
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "faces",
+   "a": "sofa",
+   "b": "tv_cabinet",
+   "tolerance_deg": 20.0
+  },
+  {
+   "hard": false,
+   "weight": 0.5,
+   "source": "builder",
+   "rel": "distance",
+   "a": "sofa",
+   "b": "tv_cabinet",
+   "range": [
+    1.5,
+    2.7
+   ],
+   "measure": "edge"
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "near",
+   "a": "coffee_table",
+   "b": "sofa",
+   "max": 0.6
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "on",
+   "a": "small_plant",
+   "b": "coffee_table",
+   "surface": "top"
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "faces",
+   "a": "armchair",
+   "b": "coffee_table",
+   "tolerance_deg": 20.0
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "against_wall",
+   "a": "bookcase",
+   "wall": "living_room:0",
+   "side": "back",
+   "max_gap": 0.1
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "against_wall",
+   "a": "low_bookcase",
+   "wall": "living_room:1",
+   "side": "back",
+   "max_gap": 0.1
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "on",
+   "a": "small_plant_2",
+   "b": "low_bookcase",
+   "surface": "top"
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "builder",
+   "rel": "hangs_from_ceiling",
+   "a": "ceiling_fan",
+   "drop": [
+    0.0,
+    0.02
+   ]
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "prompt",
+   "rel": "requires",
+   "category": "sofa",
+   "region": "living_room"
+  },
+  {
+   "hard": true,
+   "weight": 1.0,
+   "source": "prompt",
+   "rel": "requires",
+   "category": "television",
+   "region": "living_room"
+  }
+ ],
+ "rules": {
+  "float_tolerance": 0.02,
+  "sink_tolerance": 0.02,
+  "overlap_fraction": 0.02,
+  "overlap_height": 0.05,
+  "wall_tolerance": 0.01,
+  "door_clearance": 0.9,
+  "walkway_width": 0.6,
+  "deliberate_min_offset": 0.15,
+  "deliberate_min_tilt_deg": 15.0,
+  "relative_tolerance": 0.02,
+  "upright_tolerance_deg": 3.0,
+  "max_builder_intents": 6,
+  "ask_when_unexplained": true,
+  "scale_ratio": [
+   0.5,
+   2.0
+  ],
+  "max_walkable_slope_deg": 35.0,
+  "floor_covering_max_height": 0.03,
+  "allowed_overlaps": [
+   {
+    "a": "chair",
+    "b": "table",
+    "max_fraction": 0.5
+   },
+   {
+    "a": "chair",
+    "b": "desk",
+    "max_fraction": 0.5
+   },
+   {
+    "a": "stool",
+    "b": "counter",
+    "max_fraction": 0.5
+   },
+   {
+    "a": "stool",
+    "b": "kitchen island",
+    "max_fraction": 0.5
+   },
+   {
+    "a": "ottoman",
+    "b": "coffee table",
+    "max_fraction": 0.3
+   }
+  ],
+  "checks": [
+   "floating",
+   "sunk",
+   "upright",
+   "overlap",
+   "inside_wall",
+   "out_of_bounds",
+   "facing",
+   "scale",
+   "door_clearance",
+   "relations"
+  ]
+ },
+ "provenance": {
+  "by": "generator",
+  "model": "world_ir.worldgen",
+  "note": "seed 1; validated clean"
+ },
+ "extras": {}
+}

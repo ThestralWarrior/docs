@@ -14,3 +14,6 @@ target-version = ["py310"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.setuptools.package-data]
+world_ir = ["data/*.json"]
