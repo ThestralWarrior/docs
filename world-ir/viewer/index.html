@@ -15,89 +15,11 @@
       }
     }
   </script>
-  <style>
-    :root { --bg: #11161a; --panel: rgba(20, 27, 32, 0.88); --fg: #e1e8ec; --muted: #98a7b1; --line: #2a3740; --accent: #5fc4ce; }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.45 system-ui, sans-serif; }
-    #view { position: fixed; inset: 0; }
-    #panel { position: fixed; top: 12px; left: 12px; width: min(300px, calc(100vw - 24px)); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 10px; }
-    h1 { font-size: 16px; margin: 0; }
-    label { display: flex; align-items: center; gap: 8px; }
-    select { width: 100%; background: #0d1215; color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 4px 6px; font: inherit; }
-    .row { display: grid; gap: 4px; }
-    .muted { color: var(--muted); font-size: 12px; }
-    .toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
-    #selected { font-family: ui-monospace, monospace; color: var(--accent); min-height: 1.4em; }
-    #warnings { color: #e3a950; font-size: 12px; margin: 0; padding-left: 16px; }
-  </style>
 </head>
 <body>
-  <div id="view"></div>
-  <div id="panel">
-    <h1 id="title">World Viewer</h1>
-    <div class="row">
-      <span class="muted">Scene</span>
-      <select id="scene">
-        <option value="bedroom">bedroom</option>
-        <option value="minimal">minimal</option>
-        <option value="cabin_clearing">cabin_clearing</option>
-        <option value="scifi_colony">scifi_colony</option>
-        <option value="horror_room">horror_room</option>
-      </select>
-    </div>
-    <div class="row">
-      <span class="muted">Camera</span>
-      <select id="camera"><option value="orbit">orbit</option></select>
-    </div>
-    <div class="toggles">
-      <label><input type="checkbox" id="cutaway" checked> Cutaway</label>
-      <label><input type="checkbox" id="ceiling"> Ceiling</label>
-      <label><input type="checkbox" id="zones"> Clear zones</label>
-      <label><input type="checkbox" id="boxes"> Validator boxes</label>
-    </div>
-    <div class="row"><span class="muted">Click an object</span><span id="selected"></span></div>
-    <div class="muted" id="status"></div>
-    <ul id="warnings"></ul>
-  </div>
   <script type="module">
-    import { WorldView } from "./src/loader.js";
-
-    const view = new WorldView(document.getElementById("view"), { assetBase: "./" });
-    window.view = view;
-    const $ = (id) => document.getElementById(id);
-
-    async function open(name) {
-      const lowered = await (await fetch(`./scenes/${name}.json`)).json();
-      await view.load(lowered);
-      $("title").textContent = lowered.world_id.replace(/_/g, " ");
-      $("camera").innerHTML = `<option value="orbit">orbit</option>` + [...view.cameras.values()].map((c) => `<option value="${c.id}">${c.id} (${c.purpose})</option>`).join("");
-      const skipped = lowered.unsupported.map((u) => `${u.node} (${u.kind})`);
-      $("status").textContent = `${lowered.items.length} items · three r${lowered.versions.three.split(".")[1]} · lowering ${lowered.versions.lowering}` + (skipped.length ? ` · not drawn yet: ${skipped.join(", ")}` : "");
-      $("warnings").innerHTML = view.warnings.map((w) => `<li>${w}</li>`).join("");
-      // Large outdoor scenes start from their overview camera rather than from far outside the fog.
-      const b = lowered.bounds;
-      const extent = b ? Math.max(b[1][0] - b[0][0], b[1][2] - b[0][2]) : 0;
-      const overview = [...view.cameras.values()].find((c) => c.projection === "perspective" && c.purpose === "top_down");
-      if (extent > 30 && overview) view.orbitFrom(overview.id);
-      $("camera").value = "orbit";
-      $("selected").textContent = "";
-      view.highlight([]);
-      document.body.dataset.ready = name;
-    }
-
-    view.addEventListener("select", (e) => {
-      const node = e.detail?.node ?? "";
-      $("selected").textContent = node;
-      view.highlight(node ? [node] : []);
-    });
-    $("scene").addEventListener("change", (e) => open(e.target.value));
-    $("camera").addEventListener("change", (e) => view.useCamera(e.target.value));
-    for (const name of ["cutaway", "ceiling", "zones", "boxes"]) {
-      $(name).addEventListener("change", (e) => view.setOption(name, e.target.checked));
-    }
-    const start = new URLSearchParams(location.search).get("scene") ?? "bedroom";
-    $("scene").value = start;
-    open(start);
+    import { start } from "./src/app.js";
+    start({ scenes: ["bedroom", "horror_room", "minimal", "cabin_clearing", "scifi_colony"], defaultScene: "bedroom" });
   </script>
 </body>
 </html>

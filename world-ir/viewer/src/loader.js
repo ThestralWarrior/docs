@@ -93,8 +93,14 @@ export class WorldView extends EventTarget {
     this.gltf = new GLTFLoader();
     this.glbCache = new Map();
     this.tweens = [];
+    this.fades = [];
+    this.labels = [];
     this.warnings = [];
     this.behaviors = [];
+    this.labelLayer = Object.assign(document.createElement("div"), { className: "wv-labels" });
+    this.labelLayer.style.cssText = "position:absolute;inset:0;pointer-events:none;overflow:hidden";
+    if (getComputedStyle(container).position === "static") container.style.position = "relative";
+    container.appendChild(this.labelLayer);
     this.startTime = performance.now();
     this.fixedTime = null;
     RectAreaLightUniformsLib.init();
@@ -117,7 +123,9 @@ export class WorldView extends EventTarget {
     this.debugBoxes = new THREE.Group();
     this.zones = new THREE.Group();
     this.highlights = new THREE.Group();
-    this.scene.add(this.root, this.debugBoxes, this.zones, this.highlights);
+    this.marks = new THREE.Group();
+    this.scene.add(this.root, this.debugBoxes, this.zones, this.highlights, this.marks);
+    this.clearLabels();
     this.byItem = new Map();
     this.cameras = new Map();
     this.materials = new Map(Object.entries(lowered.materials).map(([id, m]) => [id, this.makeMaterial(m)]));
@@ -424,7 +432,7 @@ export class WorldView extends EventTarget {
     return new THREE.Vector3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
   }
 
-  async addItem(item) {
+  async addItem(item, { appear = 0 } = {}) {
     let object;
     if (item.type === "asset") object = await this.makeAsset(item);
     else if (item.type === "shape") object = new THREE.Mesh(shapeGeometry(item.shape, item.size, item.segments), this.material(item.material, { flat: item.flat }));
@@ -437,11 +445,20 @@ export class WorldView extends EventTarget {
       this.cameras.set(item.id, item);
       return;
     } else if (item.type === "zone") {
-      this.zones.add(this.makeZone(item));
+      const zone = this.makeZone(item);
+      zone.userData.item = item.id;
+      this.zones.add(zone);
       return;
     }
     if (!object) return;
     applyMatrix(object, item.matrix);
+    if (appear && !object.isLight) {
+      // Grow in from nothing at its final place.
+      const to = new THREE.Matrix4().fromArray(item.matrix);
+      const from = to.clone().multiply(new THREE.Matrix4().makeScale(0.001, 0.001, 0.001));
+      from.decompose(object.position, object.quaternion, object.scale);
+      this.tween(object, from, to, appear);
+    }
     object.visible = item.visible !== false;
     object.userData = { node: item.node, item: item.id, role: item.role, facing: item.facing };
     object.traverse((o) => {
@@ -669,12 +686,166 @@ export class WorldView extends EventTarget {
     }
   }
 
-  tween(object, from, to, duration) {
+  tween(object, from, to, duration, onDone = null) {
     const p0 = new THREE.Vector3(), q0 = new THREE.Quaternion(), s0 = new THREE.Vector3();
     const p1 = new THREE.Vector3(), q1 = new THREE.Quaternion(), s1 = new THREE.Vector3();
     from.decompose(p0, q0, s0);
     to.decompose(p1, q1, s1);
-    this.tweens.push({ object, p0, q0, s0, p1, q1, s1, start: performance.now(), duration });
+    this.tweens = this.tweens.filter((t) => t.object !== object);
+    this.tweens.push({ object, p0, q0, s0, p1, q1, s1, start: performance.now(), duration, onDone });
+  }
+
+  // Patches: update a loaded scene in place, with animation --------------------------
+
+  /** Applies a scene patch from lowering: moves, grows in, shrinks out and recolours instead of reloading. */
+  async applyPatch(patch, { duration = 700 } = {}) {
+    const next = patchScene(this.lowered, patch);
+    if (patch.reload || patch.behaviors) return this.load(next);
+    const before = new Map(this.lowered.items.map((i) => [i.id, i]));
+    this.lowered = next;
+    for (const [id, m] of Object.entries(patch.materials ?? {})) {
+      if (this.materials.has(id)) this.fadeMaterial(id, m, duration);
+      else this.materials.set(id, this.makeMaterial(m));
+    }
+    const jobs = [];
+    for (const id of patch.removed ?? []) this.removeItem(id, duration);
+    for (const item of patch.changed ?? []) {
+      const old = before.get(item.id);
+      if (old && samePlacementOnly(old, item)) {
+        const target = this.byItem.get(item.id);
+        const from = new THREE.Matrix4().fromArray(old.matrix);
+        const to = new THREE.Matrix4().fromArray(item.matrix);
+        for (const o of [target, ...this.debugBoxes.children.filter((b) => b.userData.item === item.id)]) {
+          if (o && !old.matrix.every((v, i) => Math.abs(v - item.matrix[i]) < 1e-6)) this.tween(o, from, to, duration);
+        }
+        if (target) target.visible = item.visible !== false;
+        if (item.type === "camera") this.cameras.set(item.id, item);
+      } else {
+        this.removeItem(item.id, duration);
+        jobs.push(this.addItem(item, { appear: duration }));
+      }
+    }
+    for (const item of patch.added ?? []) jobs.push(this.addItem(item, { appear: duration }));
+    await Promise.all(jobs);
+    const byId = new Map(this.lowered.items.map((i) => [i.id, i]));
+    for (const b of this.behaviors) {
+      for (const o of b.objects) {
+        const item = byId.get(o.userData.item);
+        if (item) o.userData.rest = new THREE.Matrix4().fromArray(item.matrix);
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, duration));
+  }
+
+  /** Shrinks an item away and removes it. */
+  removeItem(id, duration = 0) {
+    const object = this.byItem.get(id);
+    this.byItem.delete(id);
+    this.cameras.delete(id);
+    for (const group of [this.debugBoxes, this.zones]) {
+      for (const child of group.children.filter((c) => c.userData.item === id)) group.remove(child);
+    }
+    if (!object) return;
+    if (!duration || object.isLight) {
+      this.root.remove(object);
+      return;
+    }
+    const from = object.matrix.clone().compose(object.position, object.quaternion, object.scale);
+    const to = from.clone().multiply(new THREE.Matrix4().makeScale(0.001, 0.001, 0.001));
+    this.tween(object, from, to, duration, () => this.root.remove(object));
+  }
+
+  /** Blends a material (and its flat or double-sided variants) to new values. */
+  fadeMaterial(id, def, duration) {
+    const target = this.makeMaterial(def);
+    for (const [key, m] of this.materials) {
+      if (key !== id && !key.startsWith(id + "|")) continue;
+      this.fades.push({
+        m,
+        c0: m.color.clone(),
+        c1: target.color.clone(),
+        e0: m.emissive?.clone(),
+        e1: target.emissive?.clone(),
+        o0: m.opacity,
+        o1: target.opacity,
+        rest: { roughness: target.roughness, metalness: target.metalness },
+        start: performance.now(),
+        duration,
+      });
+    }
+  }
+
+  // Marks: coloured outlines and labels the viewer can put on objects -------------------
+
+  /** Outlines items in colour, with an optional label above each. marks: [{node | item, color, label}]. Pass [] to clear. */
+  showMarks(marks) {
+    this.marks.clear();
+    this.clearLabels();
+    for (const mark of marks) {
+      const items = this.lowered.items.filter((i) => (mark.item ? i.id === mark.item : i.node === mark.node || i.id === mark.node));
+      let anchor = null;
+      for (const item of items) {
+        const size = this.itemSize(item);
+        if (!size) continue;
+        const box = new THREE.LineSegments(
+          new THREE.EdgesGeometry(new THREE.BoxGeometry(size[0] + 0.05, size[1] + 0.05, size[2] + 0.05).translate(0, size[1] / 2, 0)),
+          new THREE.LineBasicMaterial({ color: new THREE.Color(mark.color), depthTest: false, transparent: true, opacity: 0.95 }),
+        );
+        box.renderOrder = 11;
+        const live = this.byItem.get(item.id);
+        if (live) box.userData.follow = live;
+        applyMatrix(box, item.matrix);
+        this.marks.add(box);
+        anchor ??= { object: live ?? box, height: size[1] };
+      }
+      if (mark.label && anchor) {
+        const el = document.createElement("div");
+        el.className = "wv-label";
+        el.textContent = mark.label;
+        el.style.cssText = `position:absolute;left:0;top:0;transform:translate(-50%,-100%);white-space:nowrap;
+          font:500 12px/1.3 system-ui,sans-serif;color:#fff;background:rgba(12,16,20,.82);padding:3px 7px;
+          border-radius:4px;border-left:3px solid ${mark.color};max-width:340px;overflow:hidden;text-overflow:ellipsis`;
+        this.labelLayer.appendChild(el);
+        this.labels.push({ el, ...anchor });
+      }
+    }
+  }
+
+  clearLabels() {
+    this.labels = [];
+    this.labelLayer.replaceChildren();
+  }
+
+  placeLabels() {
+    if (!this.labels.length) return;
+    const w = this.container.clientWidth, h = this.container.clientHeight;
+    const v = new THREE.Vector3();
+    const placed = [];
+    for (const label of this.labels) {
+      label.object.updateMatrixWorld();
+      v.set(0, label.height + 0.08, 0).applyMatrix4(label.object.matrixWorld).project(this.camera);
+      label.shown = v.z < 1 && Math.abs(v.x) < 1.2 && Math.abs(v.y) < 1.2;
+      label.x = ((v.x + 1) / 2) * w;
+      label.y = ((1 - v.y) / 2) * h;
+    }
+    // Stack labels that would cover each other, nearest-to-the-top first.
+    for (const label of [...this.labels].sort((a, b) => a.y - b.y)) {
+      label.el.style.display = label.shown ? "" : "none";
+      if (!label.shown) continue;
+      const lw = label.el.offsetWidth, lh = label.el.offsetHeight + 2;
+      let y = label.y;
+      for (let moved = true; moved; ) {
+        moved = false;
+        for (const r of placed) {
+          if (Math.abs(label.x - r.x) < (lw + r.w) / 2 && y > r.y - lh && y - lh < r.y) {
+            y = r.y - r.h;
+            moved = true;
+          }
+        }
+      }
+      placed.push({ x: label.x, y, w: lw, h: lh });
+      label.el.style.translate = `${label.x}px ${y}px`;
+    }
   }
 
   /** Outlines every item that came from these IR nodes. Pass [] to clear. */
@@ -774,9 +945,18 @@ export class WorldView extends EventTarget {
       t.object.position.lerpVectors(t.p0, t.p1, e);
       t.object.quaternion.slerpQuaternions(t.q0, t.q1, e);
       t.object.scale.lerpVectors(t.s0, t.s1, e);
+      if (k >= 1 && t.onDone) t.onDone();
       return k < 1;
     });
-    for (const box of this.highlights.children) {
+    this.fades = this.fades.filter((f) => {
+      const k = Math.min(1, (now - f.start) / f.duration);
+      f.m.color.lerpColors(f.c0, f.c1, k);
+      if (f.e0 && f.e1) f.m.emissive.lerpColors(f.e0, f.e1, k);
+      f.m.opacity = f.o0 + (f.o1 - f.o0) * k;
+      if (k >= 1) Object.assign(f.m, f.rest);
+      return k < 1;
+    });
+    for (const box of [...this.highlights.children, ...this.marks.children]) {
       const live = box.userData.follow;
       if (live) box.position.copy(live.position), box.quaternion.copy(live.quaternion);
     }
@@ -793,6 +973,7 @@ export class WorldView extends EventTarget {
     } else {
       this.renderer.render(this.scene, this.camera);
     }
+    this.placeLabels();
   }
 
   cutaway() {
@@ -828,6 +1009,26 @@ export class WorldView extends EventTarget {
     this.warnings.push(message);
     console.warn(`[world-view] ${message}`);
   }
+}
+
+/** The lowered scene after a patch, mirroring world_ir.patch.apply_patch. */
+export function patchScene(scene, patch) {
+  const changed = new Map((patch.changed ?? []).map((i) => [i.id, i]));
+  const gone = new Set(patch.removed ?? []);
+  return {
+    ...scene,
+    items: [...scene.items.filter((i) => !gone.has(i.id)).map((i) => changed.get(i.id) ?? i), ...(patch.added ?? [])],
+    materials: { ...scene.materials, ...(patch.materials ?? {}) },
+    assets: { ...scene.assets, ...(patch.assets ?? {}) },
+    bounds: patch.bounds ?? scene.bounds,
+    behaviors: patch.behaviors ?? scene.behaviors,
+  };
+}
+
+/** True when two versions of an item differ only in where they are and whether they show. */
+function samePlacementOnly(a, b) {
+  const strip = ({ matrix, aabb, visible, look_at, target, ...rest }) => rest;
+  return JSON.stringify(strip(a)) === JSON.stringify(strip(b));
 }
 
 function toArrayBuffer(data) {

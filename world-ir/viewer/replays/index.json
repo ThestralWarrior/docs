@@ -1,0 +1,20 @@
+[
+ {
+  "name": "bedroom_repair",
+  "title": "Bedroom: five planted mistakes",
+  "scene": "bedroom",
+  "steps": 5
+ },
+ {
+  "name": "horror_repair",
+  "title": "Horror room: fix the mistakes, keep the horror",
+  "scene": "horror_room",
+  "steps": 2
+ },
+ {
+  "name": "colony_repair",
+  "title": "Sci-fi colony: three planted mistakes",
+  "scene": "scifi_colony",
+  "steps": 3
+ }
+]

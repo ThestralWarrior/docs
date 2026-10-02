@@ -78,6 +78,16 @@ The world can describe much more than the repair model may change. The v1 repair
 
 Validating the bedroom takes about 3 ms; the outdoor worlds about a second, almost all of it terrain.
 
+## Training data, scoring and replays
+
+- **Bug injector** (`world_ir/inject.py`): plants labelled mistakes in clean worlds: lift, sink, push into a wall, collide, block a door, turn, tilt, scale. A bug is kept only if the validators report a new error for it, so every label is true, and each one carries its oracle undo. Decoys make an object float on purpose (the brief gains a sentence, the object gains an intent quoting it), so a model also learns what not to fix.
+- **Repair text** (`repair_text.py`): what a repair model reads: instructions, rooms and objects in parent space, and the issue list. Provenance is left out, so the model never sees which objects were tampered with.
+- **Reward** (`reward.py`): `score_repair(world, actions)` applies the actions and lets the validators judge: errors fixed, errors added, edit size, and deliberate oddities or user questions undone. Invalid output and edits to locked nodes score -1. This is the GRPO reward.
+- **Baseline** on 76 room tasks (`scripts/eval_repair.py`): the rule-based repairer fixes 75% of errors and leaves 45% of worlds clean, adding 0.29 errors per task; the oracle reaches 100%. That gap is what the trained model has to close.
+- **Replays** (`replay.py`, `patch.py`): a repair recorded one action at a time, each step stored as a small scene patch. The viewer plays them back in place (moves, grow-ins, shrink-outs, colour fades) with coloured outlines and labels: red errors, orange the fix in progress, green fixed, purple deliberate, yellow questions for the user. Open `index.html?replay=horror_repair&autoplay`.
+
+![A replay in the horror room: the chair hanging 30 cm low is put back on the ceiling, the deliberate oddities stay purple, and the bed blocking the door is a question for the user](docs/replay_horror.png)
+
 ## Deliberate oddness
 
 Validators never decide what a scene should look like; they check that it matches what it says it intends. A horror room with a chair stuck to the ceiling must not be "repaired" back to the floor, so the builder writes the intent down, with the user's own words as evidence:
@@ -132,8 +142,13 @@ world_ir/        Pydantic models: the schema itself
   snap.py          put terrain-supported nodes on the ground
   validate.py      the validators: issues, severities, suggested fixes, repair-model text
   baseline.py      rule-based repair from the suggested fixes
+  inject.py        the bug injector: labelled bugs, oracle undos, decoys
+  repair_text.py   the repair model's input text
+  reward.py        scoring a repair with the validators
+  patch.py         scene patches: what changed between two lowered scenes
+  replay.py        repairs recorded step by step for the viewer
 examples/        minimal.json, bedroom.json, horror_room.json, cabin_clearing.json, scifi_colony.json
-viewer/          three.js loader (src/loader.js), demo page, lowered scenes, Kenney CC0 furniture, nature and space models
+viewer/          three.js loader (src/loader.js), page and replay player (src/app.js), lowered scenes, replays, Kenney CC0 models
 schema/          generated JSON Schemas for worlds, actions and lowered scenes
 docs/            generated REFERENCE.md and catalogue.json
 tests/           validation, cross-reference, intent, lowering, validator and action tests
@@ -152,6 +167,9 @@ python scripts/fix_glb_metalness.py viewer/assets/kenney/nature   # some kits ma
 python scripts/fix_glb_metalness.py viewer/assets/kenney/space --metal 0.35   # and some mark every hull colour fully metallic
 python scripts/snap.py examples/scifi_colony.json                  # ground heights for terrain-supported nodes
 python scripts/validate.py examples/*.json --hints                  # check worlds; --repair applies the suggested fixes
+python scripts/make_tasks.py examples/*.json --count 200 --out tasks.jsonl   # training tasks
+python scripts/eval_repair.py examples/*.json --count 30            # score noop, rule-based and oracle repairs
+python scripts/replay.py --demo                                     # record the demo replays in viewer/replays/
 
 cd viewer && npm install && npm run serve                 # then open http://localhost:8000/?scene=bedroom
 ```
